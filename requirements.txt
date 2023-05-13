@@ -1,0 +1,6 @@
+PyGithub
+langchain
+pinecone-client
+pandas
+matplotlib
+numpy
