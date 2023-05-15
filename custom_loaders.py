@@ -159,7 +159,7 @@ class TurboGitLoader(BaseLoader):
         Returns:
             The list of documents.
         """
-        from git import Repo  # type: ignore
+        from git import Repo
 
         if not os.path.exists(self.repo_path) and self.clone_url is None:
             raise ValueError(f"Path {self.repo_path} does not exist")

@@ -4,3 +4,5 @@ pinecone-client
 pandas
 matplotlib
 numpy
+ipywidgets
+uuid
