@@ -10,10 +10,10 @@ from langchain.chains import RetrievalQA
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
+import os
 import pinecone
 import tiktoken
 from tqdm.auto import tqdm
-from typing import List, Dict, Any
 from uuid import uuid4
 
 
@@ -37,15 +37,18 @@ VECTOR_EMBEDDING_DIM = 1536
 UPSERT_BATCH_SIZE = 200
 
 
-def git_load_wrapper():
+def git_load_wrapper(repo, branch="master"):
     """ Load the git repo data using TurboGitLoader
     """
     print("Fetching data from git repo...")
+
+    folder_name = repo.split("/")[-1]
     filter_fn = lambda x: not any([x.endswith(t) for t in UNWANTED_TYPES])
+
     loader = custom_loaders.TurboGitLoader(
-        clone_url="https://github.com/hwchase17/langchain",
-        repo_path="./repo_data/TurboGitLoader/",
-        branch="master",
+        clone_url=repo,
+        repo_path=f"./repo_data/{folder_name}/",
+        branch=branch,
         file_filter=filter_fn,
     )
     return loader.load()
@@ -137,13 +140,13 @@ def embed_and_upsert(data, index, embed):
         list(executor.map(upsert_batch, [index]*len(batches), batches))
 
     index_stats = index.describe_index_stats()
-    print(f"Done!\n{index_stats}")
+    print(f"Done!\n\ndescribe_index_stats:\n{index_stats}")
 
 
-def create_vectorstore():
+def create_vectorstore(repo):
     """ Create and return vectorstore
     """
-    data = git_load_wrapper()
+    data = git_load_wrapper(repo)
     embed = get_openai_embeddings()
 
     index_name = "testindex"

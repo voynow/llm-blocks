@@ -164,8 +164,12 @@ class TurboGitLoader(BaseLoader):
         if not os.path.exists(self.repo_path) and self.clone_url is None:
             raise ValueError(f"Path {self.repo_path} does not exist")
         elif self.clone_url:
-            repo = Repo.clone_from(self.clone_url, self.repo_path)
-            repo.git.checkout(self.branch)
+            if os.path.exists(self.repo_path):
+                repo = Repo(self.repo_path)
+                repo.git.checkout(self.branch)
+            else:
+                repo = Repo.clone_from(self.clone_url, self.repo_path)
+                repo.git.checkout(self.branch)
         else:
             repo = Repo(self.repo_path)
             repo.git.checkout(self.branch)
