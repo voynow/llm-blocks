@@ -5,12 +5,9 @@ from concurrent.futures import ThreadPoolExecutor
 import custom_loaders
 from getpass import getpass
 from itertools import chain
-from langchain.chat_models import ChatOpenAI
-from langchain.chains import RetrievalQA
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
-import os
 import pinecone
 import tiktoken
 from tqdm.auto import tqdm
@@ -134,7 +131,7 @@ def embed_and_upsert(data, index, embed):
 
     with ThreadPoolExecutor(max_workers=8) as executor:
         results = list(chain.from_iterable(
-            executor.map(process_data, tqdm(data), [embed]*len(data), [text_splitter]*len(data))
+            executor.map(process_data, data, [embed]*len(data), [text_splitter]*len(data))
         ))
         batches = [results[i:i + UPSERT_BATCH_SIZE] for i in range(0, len(results), UPSERT_BATCH_SIZE)]
         list(executor.map(upsert_batch, [index]*len(batches), batches))
@@ -162,20 +159,3 @@ def create_vectorstore(repo):
         index, embed.embed_query, "text"
     )
     return vectorstore
-
-
-def get_retrieval_chain(vectorstore):
-    """ Get question answer retrieval chain object
-    """
-    llm = ChatOpenAI(
-        openai_api_key=OPENAI_API_KEY,
-        model_name='gpt-3.5-turbo',
-        temperature=0.0
-    )
-
-    qa = RetrievalQA.from_chain_type(
-        llm=llm,
-        chain_type="stuff",
-        retriever=vectorstore.as_retriever()
-    )
-    return qa
