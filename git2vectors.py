@@ -34,21 +34,24 @@ VECTOR_EMBEDDING_DIM = 1536
 UPSERT_BATCH_SIZE = 200
 
 
-def git_load_wrapper(repo, branch="master"):
+def git_load_wrapper(repo, branch="main"):
     """ Load the git repo data using TurboGitLoader
     """
     print("Fetching data from git repo...")
-
     folder_name = repo.split("/")[-1]
     filter_fn = lambda x: not any([x.endswith(t) for t in UNWANTED_TYPES])
 
-    loader = custom_loaders.TurboGitLoader(
+    gitdata = custom_loaders.TurboGitLoader(
         clone_url=repo,
         repo_path=f"./repo_data/{folder_name}/",
         branch=branch,
         file_filter=filter_fn,
-    )
-    return loader.load()
+    ).load()
+
+    user_val = input(f"You are about to load {len(gitdata)} documents from the repo. Continue? (y/n) ")
+    if user_val.lower() != "y":
+        raise ValueError("User cancelled loading")
+    return gitdata
 
 
 def get_text_splitter():
