@@ -1,67 +1,65 @@
-# Langchain-RAG
+# Project Name
 
-This repository demonstrates how to use Retrieval Augmented Generation (RAG) with Langchain, Pinecone, and OpenAI.
+Repo-Chat using RAG (Retrieval Augmented Generation) using Langchain, Pinecone, and OpenAI
 
-## Requirements
+## Overview
 
-* Python 3.10
-* Install the required packages by running `pip install -r requirements.txt`.
+This project retrieves and processes a Git code repository and provides an interface for users to ask questions about the code repository which are answered using RAG.
 
-## Usage
+## Installation
 
-This code performs the following steps:
+Install the required packages by running the following command:
 
-* Retrieves data from a git repository.
-* Embeds the text content using OpenAI's text embedding model.
-* UpSert the information into Pinecone's index.
-* Performs similarity search using Pinecone.
-* Executes question-answer retrieval chain.
-
-### Quick Start
-
-1. Initialize Pinecone API Key and OpenAI API Key:
-
-```python
-from getpass import getpass
-PINECONE_API_KEY = getpass("Pinecone API Key: ")
-OPENAI_API_KEY = getpass("OpenAI API Key: ")
+```bash
+pip install -r requirements.txt
 ```
-
-2. Import `rag_utils`:
-
-```python
-import rag_utils
-```
-
-3. Create a vectorstore using a github repository:
-
-```python
-repo = "https://github.com/hwchase17/langchain"
-vectorstore = rag_utils.create_vectorstore(repo)
-```
-
-4. Get a retrieval chain instance:
-
-```python
-qa = rag_utils.get_retrieval_chain(vectorstore)
-```
-
-5. Execute a query and get the response:
-
-```python
-query = "How can I use this code?"
-response = qa.run(query)
-print(f"Query:\n{query}\n\nResponse:\n{response}")
-```
-
-***Note:*** Make sure to replace the `OPENAI_API_KEY` and `PINECONE_API_KEY` with your own API keys.
 
 ## Modules
 
-`rag_utils.py`:
+### chat_utils.py
 
-A utility module containing functions to load data from a git repository, create an OpenAI embeddings instance, initialize Pinecone, process the data, and create a vectorstore and retrieval chain.
+This module contains functions to construct a chain from a template and an LLM, get chain inputs from a vector store, apply the query to the chain, and count the number of tokens in a string.
 
-`example.ipynb`:
+### custom_loaders.py
 
-An example Jupyter Notebook demonstrating how to use the RAG functionality.
+This module provides 2 classes for loading files from a Git repository:
+
+- `FastGitLoader`: Slightly modified from the original `GitLoader` to filter and speed up loading.
+- `TurboGitLoader`: Loads files from a Git repository into a list of documents in parallel.
+
+### git2vectors.py
+
+This module provides functionality to retrieve information from a Git repository, embed it into vectors, and store it in Pinecone.
+
+### example.ipynb
+
+This Jupyter Notebook demonstrates how to use this project to answer questions about a Git code repository.
+
+## Usage
+
+First, create a vector store by running the following:
+
+```python
+import git2vectors
+repo = "https://github.com/hwchase17/langchain"
+vectorstore = git2vectors.create_vectorstore(repo)
+```
+
+After creating a vector store, you can use the `chat_utils` module to ask questions about the code repository, as shown in `example.ipynb`.
+
+```python
+import chat_utils
+
+chain = chat_utils.construct_chain(git2vectors.OPENAI_API_KEY)
+Q = "How do I use the Langchain library? Give an example."
+inputs, docs = chat_utils.get_chain_inputs(vectorstore, Q)
+chat_utils.chat(chain, inputs)
+```
+
+For more in-depth instructions, refer to the provided `example.ipynb` file.
+
+## Acknowledgement
+
+This project uses the Langchain library. Special thanks to:
+
+- [@hwchase17](https://github.com/hwchase17)
