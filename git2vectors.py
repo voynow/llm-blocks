@@ -32,6 +32,7 @@ UNWANTED_TYPES = [
 
 VECTOR_EMBEDDING_DIM = 1536
 UPSERT_BATCH_SIZE = 200
+INDEX_NAME = "testindex"
 
 
 def git_load_wrapper(repo, branch="main"):
@@ -82,25 +83,27 @@ def get_openai_embeddings():
     )
 
 
-def pinecone_init(index_name):
-    """ Initialize Pinecone database
+def pinecone_init(index=None):
+    """ Initialize Pinecone database, Optionally create index
     """
     pinecone.init(
         api_key=PINECONE_API_KEY, 
         environment="us-west1-gcp-free"
     )
 
-    if index_name in pinecone.list_indexes():
-        print(f"Clearing index {index_name} from previous runs...")
-        pinecone.delete_index(index_name)
-    else:
-        print(f"Creating index {index_name}...")
+    if index:
+        if index in pinecone.list_indexes():
+            print(f"Clearing index {index} from previous runs...")
+            pinecone.delete_index(index)
+        else:
+            print(f"Creating index {index}...")
+            
+        pinecone.create_index(
+            name=index,
+            metric='dotproduct',
+            dimension=VECTOR_EMBEDDING_DIM,
+        )
 
-    pinecone.create_index(
-        name=index_name,
-        metric='dotproduct',
-        dimension=VECTOR_EMBEDDING_DIM,
-    )
     return pinecone
 
 
@@ -149,15 +152,21 @@ def create_vectorstore(repo):
     data = git_load_wrapper(repo)
     embed = get_openai_embeddings()
 
-    index_name = "testindex"
-    pinecone = pinecone_init(index_name)
-    index = pinecone.Index(index_name)
+    pinecone = pinecone_init(INDEX_NAME)
+    index = pinecone.Index(INDEX_NAME)
 
     embed_and_upsert(
         data=data, index=index, embed=embed
     )
 
-    index = pinecone.Index(index_name)
+
+def get_vectorstore():
+    """Get vectorstore from Pinecone index"""
+
+    pinecone = pinecone_init()
+    embed = get_openai_embeddings()
+    index = pinecone.Index(INDEX_NAME)
+
     vectorstore = Pinecone(
         index, embed.embed_query, "text"
     )
