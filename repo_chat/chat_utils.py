@@ -1,16 +1,23 @@
+
+import dotenv
 from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.callbacks import get_openai_callback
+import os
 import tiktoken
 
 
 class RetrievalChain:
-    def __init__(self, openai_api_key, vectorstore, model_name="gpt-3.5-turbo", upgrade=False):
-        self.openai_api_key = openai_api_key
+    
+    def __init__(self, vectorstore, model_name="gpt-3.5-turbo", upgrade=False):
         self.vectorstore = vectorstore
         self.model_name = model_name
         self.upgrade = upgrade
+
+        dotenv.load_dotenv()
+        self.openai_api_key = os.getenv("OPENAI_API_KEY")
+
 
     @staticmethod
     def num_tokens_from_string(string, encoding_name):

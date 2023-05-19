@@ -1,5 +1,5 @@
 secrets_manager.py
 __pycache__
 venv
-example_data
-repo_data
+data
+.env
