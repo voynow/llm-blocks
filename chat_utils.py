@@ -5,63 +5,86 @@ from langchain.callbacks import get_openai_callback
 import tiktoken
 
 
-def construct_chain(openai_api_key):
-    """ Construct chain from template and llm
-    """
+class RetrievalChain:
+    def __init__(self, openai_api_key, vectorstore, model_name="gpt-3.5-turbo", upgrade=False):
+        self.openai_api_key = openai_api_key
+        self.vectorstore = vectorstore
+        self.model_name = model_name
+        self.upgrade = upgrade
 
-    input_variables = ["query", "similar_documents"]
-    template = """A user is asking a question about a code repository. Here is there query:
-    {query}
+    @staticmethod
+    def num_tokens_from_string(string, encoding_name):
+        """Returns the number of tokens in a text string"""
+        encoding = tiktoken.get_encoding(encoding_name)
+        num_tokens = len(encoding.encode(string))
+        return num_tokens
 
-    Here are some documents containing similar information to the query:
-    {similar_documents}
+    def create_chain(self, input_variables, template):
+        """Create chain from template and llm"""
+        prompt = PromptTemplate(input_variables=input_variables, template=template)
+        llm = ChatOpenAI(openai_api_key=self.openai_api_key, model_name=self.model_name, temperature=0.1)
+        return LLMChain(llm=llm, prompt=prompt)
 
-    If you don't know say "idk" else answer the question.
-    """
+    def construct_upgrade_query_chain(self):
+        """Upgrade query to produce better information retrieval results"""
+        input_variables = ["query"]
+        template = """You are a coding assistant and a user is asking the following question about a code repository:
+        {query}
 
-    prompt = PromptTemplate(
-        input_variables=input_variables,
-        template=template,
-    )
-    llm = ChatOpenAI(
-        openai_api_key=openai_api_key,
-        model_name='gpt-4',
-        temperature=0.2
-    )
-    chain = LLMChain(llm=llm, prompt=prompt)
+        The contents of this question will be used to retrieve potentially helpful documents used in answering the question. 
+        Edit the query to improve the quality of the documents retrieved. If you don't know just return the original query.
+        """
+        return self.create_chain(input_variables, template)
 
-    return chain
+    @staticmethod
+    def get_upgrade_query_inputs(query):
+        """Get chain inputs from query"""
+        chain_inputs = {
+            "query" : query,
+        }
+        return chain_inputs
 
+    def upgrade_query(self, query):
+        """Upgrade query to produce better retrieval results"""
+        upgrade_query_chain = self.construct_upgrade_query_chain()
+        upgrade_query_chain_inputs = self.get_upgrade_query_inputs(query)
+        # TODO: add callback
+        query = upgrade_query_chain(upgrade_query_chain_inputs)['text']
+        return query
 
-def get_chain_inputs(vectorstore, query, k=5):
-    """ Get chain inputs from vectorstore
-    """
-    docs = vectorstore.similarity_search_with_score(
-        query, k=k
-    )
-    chain_inputs = {
-        "query" : query,
-        "similar_documents": [doc.page_content for doc, _ in docs]
-    }
-    return chain_inputs, docs
+    def construct_RAG_chain(self):
+        """Construct chain from template and llm"""
+        input_variables = ["query", "similar_documents"]
+        template = """A user is asking a question about a code repository. Here is there query:
+        {query}
 
+        Here are some documents containing similar information to the query:
+        {similar_documents}
 
-def chat(chain, inputs):
-    """ Apply query to chain
-    """
-    with get_openai_callback() as cb:
-        chain_resp = chain(inputs)
+        If you don't know say "Inadequate context..." else answer the question.
+        """
+        return self.create_chain(input_variables, template)
 
-    if "idk" in chain_resp['text']:
-        print("RAG FAILED")
-    else:
-        print(chain_resp['text'])
-    print(cb)
+    def get_RAG_inputs(self, query, k=5):
+        """Get chain inputs from vectorstore"""
+        docs = self.vectorstore.similarity_search_with_score(query, k=k)
+        chain_inputs = {
+            "query" : query,
+            "similar_documents": [doc.page_content for doc, _ in docs]
+        }
+        return chain_inputs, docs
 
+    def get_retrieval_chain(self, query):
+        """Get retrieval chain"""
+        if self.upgrade:
+            query = self.upgrade_query(query)
+        rag_chain = self.construct_RAG_chain()
+        rag_chain_inputs, docs = self.get_RAG_inputs(query)
+        return rag_chain, rag_chain_inputs, docs
 
-def num_tokens_from_string(string, encoding_name):
-    """Returns the number of tokens in a text string.
-    """
-    encoding = tiktoken.get_encoding(encoding_name)
-    num_tokens = len(encoding.encode(string))
-    return num_tokens
+    def chat(self, query):
+        """Apply query to chain"""
+        chain, inputs, docs = self.get_retrieval_chain(query)
+        with get_openai_callback() as cb:
+            chain_resp = chain(inputs)
+        return chain_resp, cb
