@@ -36,18 +36,10 @@ class RetrievalChain:
         """
         return self.create_chain(input_variables, template)
 
-    @staticmethod
-    def get_upgrade_query_inputs(query):
-        """Get chain inputs from query"""
-        chain_inputs = {
-            "query" : query,
-        }
-        return chain_inputs
-
     def upgrade_query(self, query):
         """Upgrade query to produce better retrieval results"""
         upgrade_query_chain = self.construct_upgrade_query_chain()
-        upgrade_query_chain_inputs = self.get_upgrade_query_inputs(query)
+        upgrade_query_chain_inputs = {"query" : query}
         # TODO: add callback
         query = upgrade_query_chain(upgrade_query_chain_inputs)['text']
         return query
@@ -61,7 +53,7 @@ class RetrievalChain:
         Here are some documents containing similar information to the query:
         {similar_documents}
 
-        If you don't know say "Inadequate context..." else answer the question.
+        Respond with "Inadequate context" if the documents are not helpful. Otherwise, return a response to the query.
         """
         return self.create_chain(input_variables, template)
 
@@ -80,11 +72,16 @@ class RetrievalChain:
             query = self.upgrade_query(query)
         rag_chain = self.construct_RAG_chain()
         rag_chain_inputs, docs = self.get_RAG_inputs(query)
-        return rag_chain, rag_chain_inputs, docs
+        scores = [d[1] for d in docs]
+        return rag_chain, rag_chain_inputs, scores
 
     def chat(self, query):
         """Apply query to chain"""
-        chain, inputs, docs = self.get_retrieval_chain(query)
+        chain, inputs, scores = self.get_retrieval_chain(query)
         with get_openai_callback() as cb:
             chain_resp = chain(inputs)
-        return chain_resp, cb
+
+        chain_resp['callback'] = cb
+        chain_resp['scores'] = scores
+
+        return chain_resp

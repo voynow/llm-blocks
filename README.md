@@ -1,10 +1,10 @@
-# Langchain Retrieval Chain and Custom Data Loaders
+# Repo-Chat
 
-This repository contains code for creating a retrieval chain from a git repository. It utilizes Langchain, Pinecone, and OpenAI to create a retrieval-augmented generation (RAG) system. Also included are custom data loaders to fetch data from git repositories.
+Repo-Chat is a retrieval-augmented generation system based on Langchain, Pinecone, and OpenAI. It helps developers answer questions about a code repository by using document similarity and context.
 
 ## Installation
 
-Install the requirements by running:
+To install the necessary dependencies, run the following command:
 
 ```bash
 pip install -r requirements.txt
@@ -12,51 +12,75 @@ pip install -r requirements.txt
 
 ## Usage
 
-### Retrieval Chain
+Here's a step-by-step guide on how to use Repo-Chat.
+
+### 1. Create Vectorstore
+
+Once you have your OpenAI API key, you can create a vectorstore for a specific Git repository.
 
 ```python
 import git2vectors
-from chat_utils import RetrievalChain
 
-# Create a vectorstore from a git repository
 repo = "https://github.com/smol-ai/developer"
-vectorstore = git2vectors.create_vectorstore(repo)
-
-# Create an instance of the RetrievalChain class
-chain = RetrievalChain(git2vectors.OPENAI_API_KEY, vectorstore)
-
-# Let's say we have a query
-query = "How do I use this?"
-
-# Generic retrieval query
-chain_response, callback = chain.chat(query)
-
-print(chain_response['query'])
-print(chain_response['similar_documents'])
-print(chain_response['text'])
-print(callback)
+git2vectors.create_vectorstore(repo)
 ```
 
-### Custom Data Loaders
+### 2. Load Vectorstore
 
-#### TurboGitLoader
+After creating the vectorstore, you can load it as follows:
 
-The `TurboGitLoader` is a complete rewrite of the Langchain Git loader, taking advantage of parallelism to speed up the loading process even more:
+```python
+vectorstore = git2vectors.get_vectorstore()
+```
+
+### 3. Use RetrievalChain
+
+Create a `RetrievalChain` with your OpenAI API key, vectorstore and the optional upgrade parameter (set to `True` or `False`).
+
+```python
+from chat_utils import RetrievalChain
+
+chain = RetrievalChain(openai_api_key="YOUR_OPENAI_API_KEY", vectorstore=vectorstore, upgrade=True)
+```
+
+### 4. Chat with RetrievalChain
+
+Ask a query to the chain for an answer:
+
+```python
+query = "How do I use this?"
+response = chain.chat(query)
+
+print(response['query'])
+print(response['text'])
+print(response['similar_documents'])
+print(response['scores'])
+print(response['callback'])
+```
+
+## Important Files
+
+- **chat_utils.py**: Contains the main `RetrievalChain` class and utilities for creating a chat model.
+- **custom_loaders.md**: Describes how to load files from a Git repository using custom loaders such as TurboGitLoader.
+- **custom_loaders.py**: Implements custom file loaders like `TurboGitLoader`.
+- **example.ipynb**: Demonstrates example usage in a Jupyter notebook.
+- **git2vectors.py**: Manages the process of creating, loading, and serving vectorstores based on Langchain, Pinecone, and OpenAI.
+
+## Custom File Loaders
+
+The `TurboGitLoader` enables parallel loading of files from a Git repository to speed up the process:
 
 ```python
 from custom_loaders import TurboGitLoader
 
 loader = TurboGitLoader(
-	clone_url="https://github.com/hwchase17/langchain",
-	repo_path="./example_data/TurboGitLoader/",
-	branch="master",
-	file_filter=lambda file_path: file_path.endswith(".py"),
+    clone_url="https://github.com/hwchase17/langchain",
+    repo_path="./example_data/TurboGitLoader/",
+    branch="master",
+    file_filter=lambda file_path: file_path.endswith(".py"),
 )
 
 data = loader.load()
-print(f"Length of data from dataloader: {len(data)}")  # takes about 20 seconds
 ```
 
-### Performance Comparison
-
-- TurboGitLoader: almost 90% improvement over Langchain's default Git loader
+Performance-wise, the TurboGitLoader offers almost a 90% improvement in loading times compared to Langchain's default Git loader.
