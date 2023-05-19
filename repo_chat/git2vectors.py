@@ -2,20 +2,22 @@
 """
 
 from concurrent.futures import ThreadPoolExecutor
-import custom_loaders
+import dotenv
+import repo_chat.custom_loaders as custom_loaders
 from getpass import getpass
 from itertools import chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Pinecone
+import os
 import pinecone
 import tiktoken
 from tqdm.auto import tqdm
 from uuid import uuid4
 
-
-OPENAI_API_KEY = getpass("OpenAI API Key: ")
-PINECONE_API_KEY = getpass("Pinecone API Key: ")
+dotenv.load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
 
 UNWANTED_TYPES = [
     ".ipynb",
@@ -44,7 +46,7 @@ def git_load_wrapper(repo, branch="main"):
 
     gitdata = custom_loaders.TurboGitLoader(
         clone_url=repo,
-        repo_path=f"./repo_data/{folder_name}/",
+        repo_path=f"./data/{folder_name}/",
         branch=branch,
         file_filter=filter_fn,
     ).load()
