@@ -4,16 +4,18 @@ from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.callbacks import get_openai_callback
+import multiprocessing
 import os
+from repo_chat import git2vectors
 import tiktoken
 
 
 class RetrievalChain:
     
-    def __init__(self, vectorstore, model_name="gpt-3.5-turbo", upgrade=False):
+    def __init__(self, vectorstore, model_name="gpt-3.5-turbo", upgrade_template=None):
         self.vectorstore = vectorstore
         self.model_name = model_name
-        self.upgrade = upgrade
+        self.upgrade_template = upgrade_template
 
         dotenv.load_dotenv()
         self.openai_api_key = os.getenv("OPENAI_API_KEY")
@@ -32,20 +34,10 @@ class RetrievalChain:
         llm = ChatOpenAI(openai_api_key=self.openai_api_key, model_name=self.model_name, temperature=0.1)
         return LLMChain(llm=llm, prompt=prompt)
 
-    def construct_upgrade_query_chain(self):
-        """Upgrade query to produce better information retrieval results"""
-        input_variables = ["query"]
-        template = """You are a coding assistant and a user is asking the following question about a code repository:
-        {query}
-
-        The contents of this question will be used to retrieve potentially helpful documents used in answering the question. 
-        Edit the query to improve the quality of the documents retrieved. If you don't know just return the original query.
-        """
-        return self.create_chain(input_variables, template)
-
-    def upgrade_query(self, query):
+    def upgrade_query(self, query, upgrade_template):
         """Upgrade query to produce better retrieval results"""
-        upgrade_query_chain = self.construct_upgrade_query_chain()
+        input_variables = ["query"]
+        upgrade_query_chain = self.create_chain(input_variables, upgrade_template)
         upgrade_query_chain_inputs = {"query" : query}
         # TODO: add callback
         query = upgrade_query_chain(upgrade_query_chain_inputs)['text']
@@ -54,13 +46,14 @@ class RetrievalChain:
     def construct_RAG_chain(self):
         """Construct chain from template and llm"""
         input_variables = ["query", "similar_documents"]
-        template = """A user is asking a question about a code repository. Here is there query:
+        template = """
+        A user has submitted a query related to a specific code repository:
         {query}
 
-        Here are some documents containing similar information to the query:
+        The following documents have been retrieved because they contain information potentially relevant to the query:
         {similar_documents}
 
-        Respond with "Inadequate context" if the documents are not helpful. Otherwise, return a response to the query.
+        Given your understanding of the query and the information contained within these documents, provide the most accurate, relevant and complete response possible. If the documents don't fully answer the query, you can infer and make educated guesses based on the context provided, just make sure to tell the user.
         """
         return self.create_chain(input_variables, template)
 
@@ -75,8 +68,8 @@ class RetrievalChain:
 
     def get_retrieval_chain(self, query):
         """Get retrieval chain"""
-        if self.upgrade:
-            query = self.upgrade_query(query)
+        if self.upgrade_template:
+            query = self.upgrade_query(query, self.upgrade_template)
         rag_chain = self.construct_RAG_chain()
         rag_chain_inputs, docs = self.get_RAG_inputs(query)
         scores = [d[1] for d in docs]
@@ -89,6 +82,75 @@ class RetrievalChain:
             chain_resp = chain(inputs)
 
         chain_resp['callback'] = cb
-        chain_resp['scores'] = scores
+        chain_resp['similarity_scores'] = scores
 
         return chain_resp
+    
+
+class CriticChain:
+
+    def __init__(self, model_name="gpt-3.5-turbo"):
+        self.model_name = model_name
+        dotenv.load_dotenv()
+        self.openai_api_key = os.getenv("OPENAI_API_KEY")
+        self.chain = self.create_chain()
+
+    def create_chain(self):
+        """Create chain for scoring responses"""
+        input_variables = ["query", "response"]
+        template = """
+        A user has submitted the following query:
+        {query}
+
+        The following response has been generated:
+        {response}
+
+        Score this response on a scale from 0 (completely irrelevant or incorrect) to 100 (perfectly answers the query). Return the score only.
+        """
+        prompt = PromptTemplate(input_variables=input_variables, template=template)
+        llm = ChatOpenAI(openai_api_key=self.openai_api_key, model_name=self.model_name, temperature=0.1)
+        chain = LLMChain(llm=llm, prompt=prompt)
+        return chain
+
+    def score(self, query, response):
+        """Score a given response to a query"""
+        inputs = {
+            "query": query,
+            "response": response
+        }
+        return self.chain(inputs)
+
+
+
+class RetrievalChainEvaluator:
+    def __init__(self, query, runs_per_query, templates):
+        self.query = query
+        self.runs_per_query = runs_per_query
+        self.templates = templates
+        self.critic = CriticChain()
+
+    def _evaluate_template(self, upgrade_template):
+        """Evaluate a single template"""
+        vectorstore = git2vectors.get_vectorstore()
+        chain = RetrievalChain(vectorstore, upgrade_template=upgrade_template)
+
+        responses = []
+        response_scores = []
+
+        for _ in range(self.runs_per_query):
+            response = chain.chat(self.query)
+            score = self.critic.score(self.query, response['text'])
+            responses.append(response)
+            response_scores.append(score['text'])
+
+        return {
+            'response_scores': response_scores,
+            # 'mean_response_score': sum(response_scores) / len(response_scores),
+            'responses': responses
+        }
+
+    def evaluate(self):
+        """Evaluate all templates"""
+        with multiprocessing.Pool() as pool:
+            results = pool.map(self._evaluate_template, self.templates)
+        return results
