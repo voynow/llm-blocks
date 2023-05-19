@@ -1,21 +1,3 @@
-## FastGitLoader
-
-The `FastGitLoader` is a slight modification of the default Langchain Git loader, with improvements in file filtering to speed up the loading process. Usage is similar to the default Git loader:
-
-```python
-from custom_loaders import FastGitLoader
-
-loader = FastGitLoader(
-    clone_url="https://github.com/hwchase17/langchain",
-    repo_path="./example_data/FastGitLoader/",
-    branch="master",
-    file_filter=lambda file_path: file_path.endswith(".py"),
-)
-
-data = loader.load()
-print(f"Length of data from dataloader: {len(data)}")  # takes about 2 minutes 10 seconds
-```
-
 ## TurboGitLoader
 
 The `TurboGitLoader` is a complete rewrite of the Langchain Git loader, taking advantage of parallelism to speed up the loading process even more:
