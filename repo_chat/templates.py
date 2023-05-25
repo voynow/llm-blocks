@@ -18,7 +18,7 @@ RUN_QUERY_RAG = {
     The following documents have been retrieved from this repo because they contain information potentially relevant to the query:
     {similar_documents}
 
-    Given your understanding of the query and the information contained within these documents, provide the most accurate, relevant and complete response possible. You are a very knowledgeable expert on the topic so feel free to infer information that is not explicitly stated in the documents. Minimize Tokens.
+    Given your understanding of the query and the information contained within these documents, provide the most accurate, relevant and complete response possible. You are a very knowledgeable expert on the topic so feel free to infer information that is not explicitly stated in the documents. You must format your response - make it looks like a readme.md. Provide code if useful. Minimize Tokens.
     """
 }
 
@@ -32,5 +32,18 @@ CONTEXT_VALIDATOR = {
     {similar_documents}
 
     How sufficient is the provided context for answering the user's query? Please respond with a number 0 (worst - the documents do not provide any information useful for answering the question) to 100 (best - the documents provide all information required for answering the question). Nothing else.
+    """
+}
+
+CRITIC = {
+    "input_variables": ["query", "response"],
+    "template": """
+    A user has submitted the following query:
+    {query}
+
+    The following response has been generated:
+    {response}
+
+    Score this response on a scale from 0 (completely irrelevant or incorrect) to 100 (perfectly helpful based on the users query). Return the numeric score only with no words.
     """
 }

@@ -1,86 +1,68 @@
-# Repo-Chat
+# Github -> Retrieval Augmented Generation Example
 
-Repo-Chat is a retrieval-augmented generation system based on Langchain, Pinecone, and OpenAI. It helps developers answer questions about a code repository by using document similarity and context.
+This is an example of using Langchain, Pinecone, and OpenAI to perform Retrieval Augmented Generation (RAG) on a GitHub repository.
 
-## Installation
+## Getting Started
 
-To install the necessary dependencies, run the following command:
+### Prerequisites
 
-```bash
-pip install -r requirements.txt
+Install the required packages specified in `requirements.txt`:
+
 ```
+PyGithub
+langchain
+pinecone-client
+pandas
+matplotlib
+numpy
+ipywidgets
+uuid
+python-dotenv
+```
+
+### Setup
+
+1. Create a `.env` file in the repository root folder and add your `OPENAI_API_KEY` and `PINECONE_API_KEY`.
+
+```
+OPENAI_API_KEY=your_openai_api_key
+PINECONE_API_KEY=your_pinecone_api_key
+```
+
+2. Run the example notebooks `evaluation.ipynb` and `example.ipynb`, which demonstrate how to use the RetrievalChain and QueryEvaluator classes with the provided Python scripts.
+
+## Files
+
+### evaluation.ipynb
+
+This Jupyter Notebook runs multiple queries using the `MultiQueryEvaluator` class in `repo_chat.eval_utils`. It demonstrates how to evaluate various responses to a set of queries using the `CriticChain`.
+
+### example.ipynb
+
+This Jupyter Notebook demonstrates how to use the `RetrievalChain` class in `repo_chat.chat_utils` to chat with a large language model using document retrieval from a GitHub repo.
+
+### requirements.txt
+
+Lists the required Python packages for this project.
+
+### repo_chat/chat_utils.py
+
+Contains the `RetrievalChain`, `ChainManager`, and `CriticChain` classes, which are responsible for managing the chat workflow using Langchain and OpenAI.
+
+### repo_chat/custom_loaders.py
+
+Contains the `TurboGitLoader` class, which is responsible for loading files from a Git repository into a list of documents.
+
+### repo_chat/eval_utils.py
+
+Contains the `QueryEvaluator` and `MultiQueryEvaluator` classes, which are responsible for evaluating query responses using the CriticChain.
+
+### repo_chat/git2vectors.py
+
+This script demonstrates how to use Langchain, Pinecone, and OpenAI to perform Retrieval Augmented Generation (RAG) on a GitHub repository.
 
 ## Usage
 
-Here's a step-by-step guide on how to use Repo-Chat.
-
-### 1. Create Vectorstore
-
-Once you have your OpenAI API key, you can create a vectorstore for a specific Git repository.
-
-```python
-import git2vectors
-
-repo = "https://github.com/smol-ai/developer"
-git2vectors.create_vectorstore(repo)
-```
-
-### 2. Load Vectorstore
-
-After creating the vectorstore, you can load it as follows:
-
-```python
-vectorstore = git2vectors.get_vectorstore()
-```
-
-### 3. Use RetrievalChain
-
-Create a `RetrievalChain` with your OpenAI API key, vectorstore and the optional upgrade parameter (set to `True` or `False`).
-
-```python
-from chat_utils import RetrievalChain
-
-chain = RetrievalChain(openai_api_key="YOUR_OPENAI_API_KEY", vectorstore=vectorstore, upgrade=True)
-```
-
-### 4. Chat with RetrievalChain
-
-Ask a query to the chain for an answer:
-
-```python
-query = "How do I use this?"
-response = chain.chat(query)
-
-print(response['query'])
-print(response['text'])
-print(response['similar_documents'])
-print(response['scores'])
-print(response['callback'])
-```
-
-## Important Files
-
-- **chat_utils.py**: Contains the main `RetrievalChain` class and utilities for creating a chat model.
-- **custom_loaders.md**: Describes how to load files from a Git repository using custom loaders such as TurboGitLoader.
-- **custom_loaders.py**: Implements custom file loaders like `TurboGitLoader`.
-- **example.ipynb**: Demonstrates example usage in a Jupyter notebook.
-- **git2vectors.py**: Manages the process of creating, loading, and serving vectorstores based on Langchain, Pinecone, and OpenAI.
-
-## Custom File Loaders
-
-The `TurboGitLoader` enables parallel loading of files from a Git repository to speed up the process:
-
-```python
-from custom_loaders import TurboGitLoader
-
-loader = TurboGitLoader(
-    clone_url="https://github.com/hwchase17/langchain",
-    repo_path="./example_data/TurboGitLoader/",
-    branch="master",
-    file_filter=lambda file_path: file_path.endswith(".py"),
-)
-
-data = loader.load()
-```
-
-Performance-wise, the TurboGitLoader offers almost a 90% improvement in loading times compared to Langchain's default Git loader.
+1. Add your OpenAI API key and Pinecone API key to the .env file.
+2. Run the example.ipynb notebook to see a basic usage of the RetrievalChain class.
+3. Run the evaluation.ipynb notebook to evaluate multiple queries with the MultiQueryEvaluator class.
