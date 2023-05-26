@@ -71,14 +71,13 @@ class MultiQueryEvaluator:
         ).evaluate()
         return query, response
 
-    def evaluate(self):
+    def evaluate(self, max_workers=4):
         """Evaluate multiple queries in parallel"""
         responses = {}
-        with concurrent.futures.ProcessPoolExecutor() as executor:
+        with concurrent.futures.ProcessPoolExecutor(max_workers=max_workers) as executor:
             for query, response in executor.map(self.run_query, self.queries):
                 responses[query] = response
         self.responses = responses
-
 
     def flatten_responses(self):
         """
