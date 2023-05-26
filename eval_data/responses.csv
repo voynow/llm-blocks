@@ -1,0 +1,1015 @@
+query,repo,similar_documents,text,score,query_id
+Explain this to me like I'm 5.,https://github.com/smol-ai/developer,"# smol developer
+
+***Human-centric & Coherent Whole Program Synthesis*** aka your own personal junior developer
+
+> [Build the thing that builds the thing!](https://twitter.com/swyx/status/1657578738345979905) a `smol dev` for every dev in every situation
+
+this is a prototype of a ""junior developer"" agent (aka `smol dev`) that scaffolds an entire codebase out for you once you give it a product spec, but does not end the world or overpromise AGI. instead of making and maintaining specific, rigid, one-shot starters, like `create-react-app`, or `create-nextjs-app`, this is basically [`create-anything-app`](https://news.ycombinator.com/item?id=35942352) where you develop your scaffolding prompt in a tight loop with your smol dev.
+
+AI that is helpful, harmless, and honest is complemented by a codebase that is simple, safe, and smol - <200 lines of Python and Prompts, so this is easy to understand and customize.
+
+<p align=""center"">
+  <img height=200 src=""https://pbs.twimg.com/media/FwEzVCcaMAE7t4h?format=jpg&name=large"" />
+</p>
+
+
+*engineering with prompts, rather than prompt engineering* 
+
+The demo example in `prompt.md` shows the potential of AI-enabled, but still firmly human developer centric, workflow:
+
+- Human writes a basic prompt for the app they want to build
+- `main.py` generates code
+- Human runs/reads the code
+- Human can:
+  - simply add to the prompt as they discover underspecified parts of the prompt,- simply add to the prompt as they discover underspecified parts of the prompt
+  - manually runs the code and identifies errors
+  - *paste the error into the prompt* just like they would file a github issue
+  - for extra help, they can use `debugger.py` which reads the whole codebase to make specific code change suggestions
+
+Loop until happiness is attained. Notice that AI is only used as long as it is adding value - once it gets in your way, just take over the codebase from your smol junior developer with no fuss and no hurt feelings. (*we could also have smol-dev take over an existing codebase and bootstrap its own prompt... but that's a Future Direction*)
+
+*Not no code, not low code, but some third thing.* 
+
+Perhaps a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail at least to scaffold things out.
+
+## video demo
+
+[![https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg](https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg)](https://youtu.be/UCo7YeTy-aE)
+
+## arch diagram
+
+naturally generated with gpt4, like [we did for babyagi](https://twitter.com/swyx/status/1648724820316786688)
+![image](https://github.com/smol-ai/developer/assets/6764957/f8fc68f4-77f6-43ee-852f-a35fb195430a)
+
+
+### innovations and insights
+
+> Please subscribe to https://latent.space/ for a fuller writeup and insights and reflections,## install
+
+it's basically: 
+
+- `git clone https://github.com/smol-ai/developer`.
+- copy over `.example.env` to `.env` filling in your API keys.
+
+There are no python dependencies to wrangle thanks to using Modal as a [self-provisioning runtime](https://www.google.com/search?q=self+provisioning+runtime).
+
+Unfortunately this project also uses 3 waitlisted things:
+
+- Modal.com - `pip install modal-client` (private beta - hit up the modal team to get an invite, and login)
+  - You can run this project w/o Modal following these instructions:
+  - `pip install -r requirements.txt`
+  - `python main_no_modal.py YOUR_PROMPT_HERE`
+- GPT-4 api (private beta) - can use 3.5 but obviously wont be as good
+- (for the demo project) anthropic claude 100k context api (private beta)
+
+> yes, the most important skill in being an ai engineer is social engineering to get off waitlists. Modal will let you in if you say the keyword ""swyx""
+
+you'll have to adapt this code on a fork if you want to use it on other infra. please open issues/PRs and i'll happily highlight your fork here.
+
+### trying the example chrome extension,modal-client
+openai
+tiktoken,- **Markdown is all you need** - Markdown is the perfect way to prompt for whole program synthesis because it is easy to mix english and code (whether `variable_names` or entire \`\`\` code fenced code samples)
+  - turns out you can specify prompts in code in prompts and gpt4 obeys that to the letter
+- **Copy and paste programming**
+  - teaching the program to understand how to code around a new API (Anthropic's API is after GPT3's knowledge cutoff) by just pasting in the `curl` input and output
+  - pasting error messages into the prompt and vaguely telling the program how you'd like it handled. it kind of feels like ""logbook driven programming"".
+- **Debugging by `cat`ing** the whole codebase with your error message and getting specific fix suggestions - particularly delightful!
+- **Tricks for whole program coherence** - our chosen example usecase, Chrome extensions, have a lot of indirect dependencies across files. Any hallucination of cross dependencies causes the whole program to error. 
+  - We solved this by adding an intermediate step asking GPT to think through `shared_dependencies.md`, and then insisting on using that in generating each file. This basically means GPT is able to talk to itself...
+  - ... but it's not perfect, yet. `shared_dependencies.md` is sometimes not comperehensive in understanding what are hard dependencies between files. So we just solved it by specifying a specific `name` in the prompt. felt dirty at first but it works, and really it's just clear unambiguous communication at the end of the day. 
+  - see `prompt.md` for SOTA smol-dev prompting
+- **Low activation energy for unfamiliar APIs**","The smol-ai/developer repository contains a prototype of a ""junior developer"" agent that scaffolds an entire codebase for users based on a product spec. It is a human-centric and coherent whole program synthesis tool that uses AI to assist developers in creating codebases. The codebase is simple, safe, and less than 200 lines of Python and Prompts, making it easy to understand and customize. The tool uses prompts to generate code, and users can add to the prompt as they discover underspecified parts of the prompt. The AI is only used as long as it is adding value, and users can take over the codebase from the junior developer with no fuss and no hurt feelings. The tool is not no code or low code, but some third thing that still requires technical knowledge. The repository also includes a video demo and an arch diagram. To use the tool, users need to clone the repository and fill in their API keys. The tool uses Modal as a self-provisioning runtime and requires access to Modal.com, GPT-4 API, and Anthropics Claude 100k context API, which are currently in private beta. The tool uses Markdown to prompt for whole program synthesis and allows users to paste in code and error messages to teach the program how to code around a new API. The tool also includes tricks for whole program coherence and low activation energy for unfamiliar APIs.",90,0
+Explain this to me like I'm 5.,https://github.com/smol-ai/developer,"# smol developer
+
+***Human-centric & Coherent Whole Program Synthesis*** aka your own personal junior developer
+
+> [Build the thing that builds the thing!](https://twitter.com/swyx/status/1657578738345979905) a `smol dev` for every dev in every situation
+
+this is a prototype of a ""junior developer"" agent (aka `smol dev`) that scaffolds an entire codebase out for you once you give it a product spec, but does not end the world or overpromise AGI. instead of making and maintaining specific, rigid, one-shot starters, like `create-react-app`, or `create-nextjs-app`, this is basically [`create-anything-app`](https://news.ycombinator.com/item?id=35942352) where you develop your scaffolding prompt in a tight loop with your smol dev.
+
+AI that is helpful, harmless, and honest is complemented by a codebase that is simple, safe, and smol - <200 lines of Python and Prompts, so this is easy to understand and customize.
+
+<p align=""center"">
+  <img height=200 src=""https://pbs.twimg.com/media/FwEzVCcaMAE7t4h?format=jpg&name=large"" />
+</p>
+
+
+*engineering with prompts, rather than prompt engineering* 
+
+The demo example in `prompt.md` shows the potential of AI-enabled, but still firmly human developer centric, workflow:
+
+- Human writes a basic prompt for the app they want to build
+- `main.py` generates code
+- Human runs/reads the code
+- Human can:
+  - simply add to the prompt as they discover underspecified parts of the prompt,- simply add to the prompt as they discover underspecified parts of the prompt
+  - manually runs the code and identifies errors
+  - *paste the error into the prompt* just like they would file a github issue
+  - for extra help, they can use `debugger.py` which reads the whole codebase to make specific code change suggestions
+
+Loop until happiness is attained. Notice that AI is only used as long as it is adding value - once it gets in your way, just take over the codebase from your smol junior developer with no fuss and no hurt feelings. (*we could also have smol-dev take over an existing codebase and bootstrap its own prompt... but that's a Future Direction*)
+
+*Not no code, not low code, but some third thing.* 
+
+Perhaps a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail at least to scaffold things out.
+
+## video demo
+
+[![https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg](https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg)](https://youtu.be/UCo7YeTy-aE)
+
+## arch diagram
+
+naturally generated with gpt4, like [we did for babyagi](https://twitter.com/swyx/status/1648724820316786688)
+![image](https://github.com/smol-ai/developer/assets/6764957/f8fc68f4-77f6-43ee-852f-a35fb195430a)
+
+
+### innovations and insights
+
+> Please subscribe to https://latent.space/ for a fuller writeup and insights and reflections,## install
+
+it's basically: 
+
+- `git clone https://github.com/smol-ai/developer`.
+- copy over `.example.env` to `.env` filling in your API keys.
+
+There are no python dependencies to wrangle thanks to using Modal as a [self-provisioning runtime](https://www.google.com/search?q=self+provisioning+runtime).
+
+Unfortunately this project also uses 3 waitlisted things:
+
+- Modal.com - `pip install modal-client` (private beta - hit up the modal team to get an invite, and login)
+  - You can run this project w/o Modal following these instructions:
+  - `pip install -r requirements.txt`
+  - `python main_no_modal.py YOUR_PROMPT_HERE`
+- GPT-4 api (private beta) - can use 3.5 but obviously wont be as good
+- (for the demo project) anthropic claude 100k context api (private beta)
+
+> yes, the most important skill in being an ai engineer is social engineering to get off waitlists. Modal will let you in if you say the keyword ""swyx""
+
+you'll have to adapt this code on a fork if you want to use it on other infra. please open issues/PRs and i'll happily highlight your fork here.
+
+### trying the example chrome extension,- **Markdown is all you need** - Markdown is the perfect way to prompt for whole program synthesis because it is easy to mix english and code (whether `variable_names` or entire \`\`\` code fenced code samples)
+  - turns out you can specify prompts in code in prompts and gpt4 obeys that to the letter
+- **Copy and paste programming**
+  - teaching the program to understand how to code around a new API (Anthropic's API is after GPT3's knowledge cutoff) by just pasting in the `curl` input and output
+  - pasting error messages into the prompt and vaguely telling the program how you'd like it handled. it kind of feels like ""logbook driven programming"".
+- **Debugging by `cat`ing** the whole codebase with your error message and getting specific fix suggestions - particularly delightful!
+- **Tricks for whole program coherence** - our chosen example usecase, Chrome extensions, have a lot of indirect dependencies across files. Any hallucination of cross dependencies causes the whole program to error. 
+  - We solved this by adding an intermediate step asking GPT to think through `shared_dependencies.md`, and then insisting on using that in generating each file. This basically means GPT is able to talk to itself...
+  - ... but it's not perfect, yet. `shared_dependencies.md` is sometimes not comperehensive in understanding what are hard dependencies between files. So we just solved it by specifying a specific `name` in the prompt. felt dirty at first but it works, and really it's just clear unambiguous communication at the end of the day. 
+  - see `prompt.md` for SOTA smol-dev prompting
+- **Low activation energy for unfamiliar APIs**,The program is a Chrome extension that summarizes web pages using the Anthropic Claude API. It consists of several files: popup.js, styles.css, 
+background.js, popup.html, shared_dependencies.md, and content_script.js. 
+
+popup.html is the main user interface for the extension, containing a form with several input fields and a submit button. popup.js handles the logic
+for the form, including retrieving the user's input, calling the Anthropic API, and rendering the summary in the content div. styles.css provides 
+styling for the UI elements.
+
+background.js is responsible for executing content_script.js, which retrieves the page content (title and body text) and sends it to popup.js for 
+processing. It also handles storing and retrieving the page content data using Chrome's storage API.
+
+shared_dependencies.md lists the shared variables, data schemas, DOM element IDs, message names, and function names used across the various files.
+
+Overall, the program uses a combination of JavaScript, HTML, and CSS to provide a user-friendly interface for summarizing web pages using the 
+Anthropic Claude API.","This github repository contains a prototype for a ""junior developer"" agent that scaffolds an entire codebase based on a product spec. It is designed to be helpful, harmless, and honest, and is complemented by a codebase that is simple, safe, and small. The program uses prompts to generate code, and the user can add to the prompt as they discover underspecified parts of it. The AI is only used as long as it is adding value, and the user can take over the codebase from the junior developer at any time. The program is not no code or low code, but some third thing. It is a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail to scaffold things out. The program is a Chrome extension that summarizes web pages using the Anthropic Claude API. It consists of several files: popup.js, styles.css, background.js, popup.html, shared_dependencies.md, and content_script.js.",50,1
+Explain this to me like I'm 5.,https://github.com/smol-ai/developer,"# smol developer
+
+***Human-centric & Coherent Whole Program Synthesis*** aka your own personal junior developer
+
+> [Build the thing that builds the thing!](https://twitter.com/swyx/status/1657578738345979905) a `smol dev` for every dev in every situation
+
+this is a prototype of a ""junior developer"" agent (aka `smol dev`) that scaffolds an entire codebase out for you once you give it a product spec, but does not end the world or overpromise AGI. instead of making and maintaining specific, rigid, one-shot starters, like `create-react-app`, or `create-nextjs-app`, this is basically [`create-anything-app`](https://news.ycombinator.com/item?id=35942352) where you develop your scaffolding prompt in a tight loop with your smol dev.
+
+AI that is helpful, harmless, and honest is complemented by a codebase that is simple, safe, and smol - <200 lines of Python and Prompts, so this is easy to understand and customize.
+
+<p align=""center"">
+  <img height=200 src=""https://pbs.twimg.com/media/FwEzVCcaMAE7t4h?format=jpg&name=large"" />
+</p>
+
+
+*engineering with prompts, rather than prompt engineering* 
+
+The demo example in `prompt.md` shows the potential of AI-enabled, but still firmly human developer centric, workflow:
+
+- Human writes a basic prompt for the app they want to build
+- `main.py` generates code
+- Human runs/reads the code
+- Human can:
+  - simply add to the prompt as they discover underspecified parts of the prompt,- simply add to the prompt as they discover underspecified parts of the prompt
+  - manually runs the code and identifies errors
+  - *paste the error into the prompt* just like they would file a github issue
+  - for extra help, they can use `debugger.py` which reads the whole codebase to make specific code change suggestions
+
+Loop until happiness is attained. Notice that AI is only used as long as it is adding value - once it gets in your way, just take over the codebase from your smol junior developer with no fuss and no hurt feelings. (*we could also have smol-dev take over an existing codebase and bootstrap its own prompt... but that's a Future Direction*)
+
+*Not no code, not low code, but some third thing.* 
+
+Perhaps a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail at least to scaffold things out.
+
+## video demo
+
+[![https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg](https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg)](https://youtu.be/UCo7YeTy-aE)
+
+## arch diagram
+
+naturally generated with gpt4, like [we did for babyagi](https://twitter.com/swyx/status/1648724820316786688)
+![image](https://github.com/smol-ai/developer/assets/6764957/f8fc68f4-77f6-43ee-852f-a35fb195430a)
+
+
+### innovations and insights
+
+> Please subscribe to https://latent.space/ for a fuller writeup and insights and reflections,## install
+
+it's basically: 
+
+- `git clone https://github.com/smol-ai/developer`.
+- copy over `.example.env` to `.env` filling in your API keys.
+
+There are no python dependencies to wrangle thanks to using Modal as a [self-provisioning runtime](https://www.google.com/search?q=self+provisioning+runtime).
+
+Unfortunately this project also uses 3 waitlisted things:
+
+- Modal.com - `pip install modal-client` (private beta - hit up the modal team to get an invite, and login)
+  - You can run this project w/o Modal following these instructions:
+  - `pip install -r requirements.txt`
+  - `python main_no_modal.py YOUR_PROMPT_HERE`
+- GPT-4 api (private beta) - can use 3.5 but obviously wont be as good
+- (for the demo project) anthropic claude 100k context api (private beta)
+
+> yes, the most important skill in being an ai engineer is social engineering to get off waitlists. Modal will let you in if you say the keyword ""swyx""
+
+you'll have to adapt this code on a fork if you want to use it on other infra. please open issues/PRs and i'll happily highlight your fork here.
+
+### trying the example chrome extension,- **Markdown is all you need** - Markdown is the perfect way to prompt for whole program synthesis because it is easy to mix english and code (whether `variable_names` or entire \`\`\` code fenced code samples)
+  - turns out you can specify prompts in code in prompts and gpt4 obeys that to the letter
+- **Copy and paste programming**
+  - teaching the program to understand how to code around a new API (Anthropic's API is after GPT3's knowledge cutoff) by just pasting in the `curl` input and output
+  - pasting error messages into the prompt and vaguely telling the program how you'd like it handled. it kind of feels like ""logbook driven programming"".
+- **Debugging by `cat`ing** the whole codebase with your error message and getting specific fix suggestions - particularly delightful!
+- **Tricks for whole program coherence** - our chosen example usecase, Chrome extensions, have a lot of indirect dependencies across files. Any hallucination of cross dependencies causes the whole program to error. 
+  - We solved this by adding an intermediate step asking GPT to think through `shared_dependencies.md`, and then insisting on using that in generating each file. This basically means GPT is able to talk to itself...
+  - ... but it's not perfect, yet. `shared_dependencies.md` is sometimes not comperehensive in understanding what are hard dependencies between files. So we just solved it by specifying a specific `name` in the prompt. felt dirty at first but it works, and really it's just clear unambiguous communication at the end of the day. 
+  - see `prompt.md` for SOTA smol-dev prompting
+- **Low activation energy for unfamiliar APIs**,The program is a Chrome extension that summarizes web pages using the Anthropic Claude API. It consists of several files: popup.js, styles.css, 
+background.js, popup.html, shared_dependencies.md, and content_script.js. 
+
+popup.html is the main user interface for the extension, containing a form with several input fields and a submit button. popup.js handles the logic
+for the form, including retrieving the user's input, calling the Anthropic API, and rendering the summary in the content div. styles.css provides 
+styling for the UI elements.
+
+background.js is responsible for executing content_script.js, which retrieves the page content (title and body text) and sends it to popup.js for 
+processing. It also handles storing and retrieving the page content data using Chrome's storage API.
+
+shared_dependencies.md lists the shared variables, data schemas, DOM element IDs, message names, and function names used across the various files.
+
+Overall, the program uses a combination of JavaScript, HTML, and CSS to provide a user-friendly interface for summarizing web pages using the 
+Anthropic Claude API.","This github repository contains a prototype for a ""junior developer"" agent that scaffolds an entire codebase based on a product spec. It is designed to be helpful, harmless, and honest, and is complemented by a codebase that is simple, safe, and small. The program uses prompts to generate code, and the user can manually run and read the code, add to the prompt, and paste error messages into the prompt. The program is not no code or low code, but rather a third thing that still requires technical knowledge. The repository also includes a video demo and an arch diagram. The program is a Chrome extension that summarizes web pages using the Anthropic Claude API and uses a combination of JavaScript, HTML, and CSS to provide a user-friendly interface.",50,2
+What does this do?,https://github.com/smol-ai/developer,"- simply add to the prompt as they discover underspecified parts of the prompt
+  - manually runs the code and identifies errors
+  - *paste the error into the prompt* just like they would file a github issue
+  - for extra help, they can use `debugger.py` which reads the whole codebase to make specific code change suggestions
+
+Loop until happiness is attained. Notice that AI is only used as long as it is adding value - once it gets in your way, just take over the codebase from your smol junior developer with no fuss and no hurt feelings. (*we could also have smol-dev take over an existing codebase and bootstrap its own prompt... but that's a Future Direction*)
+
+*Not no code, not low code, but some third thing.* 
+
+Perhaps a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail at least to scaffold things out.
+
+## video demo
+
+[![https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg](https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg)](https://youtu.be/UCo7YeTy-aE)
+
+## arch diagram
+
+naturally generated with gpt4, like [we did for babyagi](https://twitter.com/swyx/status/1648724820316786688)
+![image](https://github.com/smol-ai/developer/assets/6764957/f8fc68f4-77f6-43ee-852f-a35fb195430a)
+
+
+### innovations and insights
+
+> Please subscribe to https://latent.space/ for a fuller writeup and insights and reflections,MIT License Copyright (c) 2023 swyx
+
+Permission is hereby granted, free of
+charge, to any person obtaining a copy of this software and associated
+documentation files (the ""Software""), to deal in the Software without
+restriction, including without limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to the
+following conditions:
+
+The above copyright notice and this permission notice
+(including the next paragraph) shall be included in all copies or substantial
+portions of the Software.
+
+THE SOFTWARE IS PROVIDED ""AS IS"", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.,- **ability to install its own dependencies**
+  - this leaks into depending on the execution environment, which we all know is the path to dependency madness. how to avoid? dockerize? nix? [web container](https://twitter.com/litbid/status/1658154530385670150)?
+  - Modal has an interesting possibility: generate functions that speak modal which also solves the dependency thing https://twitter.com/akshat_b/status/1658146096902811657
+- **self-heal** by running the code itself and use errors as information for reprompting 
+  - however its a bit hard to get errors from the chrome extension environment so we did not try this
+- **using anthropic as the coding layer**
+  - you can run `modal run anthropic.py --prompt prompt.md --outputdir=anthropic` to try it
+  - but it doesnt work because anthropic doesnt follow instructions to generate file code very well.
+- **make agents that autonomously run this code in a loop/watch the prompt file** and regenerate code each time, on a new git branch
+  - the code could be generated on 5 simultaneous git branches and checking their output would just involve switching git branches,# smol developer
+
+***Human-centric & Coherent Whole Program Synthesis*** aka your own personal junior developer
+
+> [Build the thing that builds the thing!](https://twitter.com/swyx/status/1657578738345979905) a `smol dev` for every dev in every situation
+
+this is a prototype of a ""junior developer"" agent (aka `smol dev`) that scaffolds an entire codebase out for you once you give it a product spec, but does not end the world or overpromise AGI. instead of making and maintaining specific, rigid, one-shot starters, like `create-react-app`, or `create-nextjs-app`, this is basically [`create-anything-app`](https://news.ycombinator.com/item?id=35942352) where you develop your scaffolding prompt in a tight loop with your smol dev.
+
+AI that is helpful, harmless, and honest is complemented by a codebase that is simple, safe, and smol - <200 lines of Python and Prompts, so this is easy to understand and customize.
+
+<p align=""center"">
+  <img height=200 src=""https://pbs.twimg.com/media/FwEzVCcaMAE7t4h?format=jpg&name=large"" />
+</p>
+
+
+*engineering with prompts, rather than prompt engineering* 
+
+The demo example in `prompt.md` shows the potential of AI-enabled, but still firmly human developer centric, workflow:
+
+- Human writes a basic prompt for the app they want to build
+- `main.py` generates code
+- Human runs/reads the code
+- Human can:
+  - simply add to the prompt as they discover underspecified parts of the prompt,- **Markdown is all you need** - Markdown is the perfect way to prompt for whole program synthesis because it is easy to mix english and code (whether `variable_names` or entire \`\`\` code fenced code samples)
+  - turns out you can specify prompts in code in prompts and gpt4 obeys that to the letter
+- **Copy and paste programming**
+  - teaching the program to understand how to code around a new API (Anthropic's API is after GPT3's knowledge cutoff) by just pasting in the `curl` input and output
+  - pasting error messages into the prompt and vaguely telling the program how you'd like it handled. it kind of feels like ""logbook driven programming"".
+- **Debugging by `cat`ing** the whole codebase with your error message and getting specific fix suggestions - particularly delightful!
+- **Tricks for whole program coherence** - our chosen example usecase, Chrome extensions, have a lot of indirect dependencies across files. Any hallucination of cross dependencies causes the whole program to error. 
+  - We solved this by adding an intermediate step asking GPT to think through `shared_dependencies.md`, and then insisting on using that in generating each file. This basically means GPT is able to talk to itself...
+  - ... but it's not perfect, yet. `shared_dependencies.md` is sometimes not comperehensive in understanding what are hard dependencies between files. So we just solved it by specifying a specific `name` in the prompt. felt dirty at first but it works, and really it's just clear unambiguous communication at the end of the day. 
+  - see `prompt.md` for SOTA smol-dev prompting
+- **Low activation energy for unfamiliar APIs**","The purpose of the code in this repository is to create a ""junior developer"" agent that can scaffold an entire codebase based on a product spec provided by the user. The agent uses prompts written in Markdown to generate code, which the user can then manually run and modify as needed. The codebase is designed to be simple, safe, and under 200 lines of Python and Prompts. The agent can also make specific code change suggestions using a tool called `debugger.py`. The codebase is intended to be human-centric and to complement AI that is helpful, harmless, and honest. The repository contains various documents that provide additional information on the codebase, including a video demo and an architecture diagram.",90,0
+What does this do?,https://github.com/smol-ai/developer,"- simply add to the prompt as they discover underspecified parts of the prompt
+  - manually runs the code and identifies errors
+  - *paste the error into the prompt* just like they would file a github issue
+  - for extra help, they can use `debugger.py` which reads the whole codebase to make specific code change suggestions
+
+Loop until happiness is attained. Notice that AI is only used as long as it is adding value - once it gets in your way, just take over the codebase from your smol junior developer with no fuss and no hurt feelings. (*we could also have smol-dev take over an existing codebase and bootstrap its own prompt... but that's a Future Direction*)
+
+*Not no code, not low code, but some third thing.* 
+
+Perhaps a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail at least to scaffold things out.
+
+## video demo
+
+[![https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg](https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg)](https://youtu.be/UCo7YeTy-aE)
+
+## arch diagram
+
+naturally generated with gpt4, like [we did for babyagi](https://twitter.com/swyx/status/1648724820316786688)
+![image](https://github.com/smol-ai/developer/assets/6764957/f8fc68f4-77f6-43ee-852f-a35fb195430a)
+
+
+### innovations and insights
+
+> Please subscribe to https://latent.space/ for a fuller writeup and insights and reflections,MIT License Copyright (c) 2023 swyx
+
+Permission is hereby granted, free of
+charge, to any person obtaining a copy of this software and associated
+documentation files (the ""Software""), to deal in the Software without
+restriction, including without limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to the
+following conditions:
+
+The above copyright notice and this permission notice
+(including the next paragraph) shall be included in all copies or substantial
+portions of the Software.
+
+THE SOFTWARE IS PROVIDED ""AS IS"", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.,- **ability to install its own dependencies**
+  - this leaks into depending on the execution environment, which we all know is the path to dependency madness. how to avoid? dockerize? nix? [web container](https://twitter.com/litbid/status/1658154530385670150)?
+  - Modal has an interesting possibility: generate functions that speak modal which also solves the dependency thing https://twitter.com/akshat_b/status/1658146096902811657
+- **self-heal** by running the code itself and use errors as information for reprompting 
+  - however its a bit hard to get errors from the chrome extension environment so we did not try this
+- **using anthropic as the coding layer**
+  - you can run `modal run anthropic.py --prompt prompt.md --outputdir=anthropic` to try it
+  - but it doesnt work because anthropic doesnt follow instructions to generate file code very well.
+- **make agents that autonomously run this code in a loop/watch the prompt file** and regenerate code each time, on a new git branch
+  - the code could be generated on 5 simultaneous git branches and checking their output would just involve switching git branches,# smol developer
+
+***Human-centric & Coherent Whole Program Synthesis*** aka your own personal junior developer
+
+> [Build the thing that builds the thing!](https://twitter.com/swyx/status/1657578738345979905) a `smol dev` for every dev in every situation
+
+this is a prototype of a ""junior developer"" agent (aka `smol dev`) that scaffolds an entire codebase out for you once you give it a product spec, but does not end the world or overpromise AGI. instead of making and maintaining specific, rigid, one-shot starters, like `create-react-app`, or `create-nextjs-app`, this is basically [`create-anything-app`](https://news.ycombinator.com/item?id=35942352) where you develop your scaffolding prompt in a tight loop with your smol dev.
+
+AI that is helpful, harmless, and honest is complemented by a codebase that is simple, safe, and smol - <200 lines of Python and Prompts, so this is easy to understand and customize.
+
+<p align=""center"">
+  <img height=200 src=""https://pbs.twimg.com/media/FwEzVCcaMAE7t4h?format=jpg&name=large"" />
+</p>
+
+
+*engineering with prompts, rather than prompt engineering* 
+
+The demo example in `prompt.md` shows the potential of AI-enabled, but still firmly human developer centric, workflow:
+
+- Human writes a basic prompt for the app they want to build
+- `main.py` generates code
+- Human runs/reads the code
+- Human can:
+  - simply add to the prompt as they discover underspecified parts of the prompt,- **Markdown is all you need** - Markdown is the perfect way to prompt for whole program synthesis because it is easy to mix english and code (whether `variable_names` or entire \`\`\` code fenced code samples)
+  - turns out you can specify prompts in code in prompts and gpt4 obeys that to the letter
+- **Copy and paste programming**
+  - teaching the program to understand how to code around a new API (Anthropic's API is after GPT3's knowledge cutoff) by just pasting in the `curl` input and output
+  - pasting error messages into the prompt and vaguely telling the program how you'd like it handled. it kind of feels like ""logbook driven programming"".
+- **Debugging by `cat`ing** the whole codebase with your error message and getting specific fix suggestions - particularly delightful!
+- **Tricks for whole program coherence** - our chosen example usecase, Chrome extensions, have a lot of indirect dependencies across files. Any hallucination of cross dependencies causes the whole program to error. 
+  - We solved this by adding an intermediate step asking GPT to think through `shared_dependencies.md`, and then insisting on using that in generating each file. This basically means GPT is able to talk to itself...
+  - ... but it's not perfect, yet. `shared_dependencies.md` is sometimes not comperehensive in understanding what are hard dependencies between files. So we just solved it by specifying a specific `name` in the prompt. felt dirty at first but it works, and really it's just clear unambiguous communication at the end of the day. 
+  - see `prompt.md` for SOTA smol-dev prompting
+- **Low activation energy for unfamiliar APIs**","The purpose of the code in this repository is to create a ""junior developer"" agent that can scaffold an entire codebase based on a product spec provided by the user. The agent uses prompts written in Markdown to generate code, which the user can then run and modify as needed. The codebase is designed to be simple, safe, and under 200 lines of Python and Prompts. The agent can also use AI to suggest specific code changes and can self-heal by using errors as information for reprompting. The codebase is licensed under the MIT License.",100,1
+What does this do?,https://github.com/smol-ai/developer,"- simply add to the prompt as they discover underspecified parts of the prompt
+  - manually runs the code and identifies errors
+  - *paste the error into the prompt* just like they would file a github issue
+  - for extra help, they can use `debugger.py` which reads the whole codebase to make specific code change suggestions
+
+Loop until happiness is attained. Notice that AI is only used as long as it is adding value - once it gets in your way, just take over the codebase from your smol junior developer with no fuss and no hurt feelings. (*we could also have smol-dev take over an existing codebase and bootstrap its own prompt... but that's a Future Direction*)
+
+*Not no code, not low code, but some third thing.* 
+
+Perhaps a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail at least to scaffold things out.
+
+## video demo
+
+[![https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg](https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg)](https://youtu.be/UCo7YeTy-aE)
+
+## arch diagram
+
+naturally generated with gpt4, like [we did for babyagi](https://twitter.com/swyx/status/1648724820316786688)
+![image](https://github.com/smol-ai/developer/assets/6764957/f8fc68f4-77f6-43ee-852f-a35fb195430a)
+
+
+### innovations and insights
+
+> Please subscribe to https://latent.space/ for a fuller writeup and insights and reflections,MIT License Copyright (c) 2023 swyx
+
+Permission is hereby granted, free of
+charge, to any person obtaining a copy of this software and associated
+documentation files (the ""Software""), to deal in the Software without
+restriction, including without limitation the rights to use, copy, modify, merge,
+publish, distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to the
+following conditions:
+
+The above copyright notice and this permission notice
+(including the next paragraph) shall be included in all copies or substantial
+portions of the Software.
+
+THE SOFTWARE IS PROVIDED ""AS IS"", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO
+EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.,- **ability to install its own dependencies**
+  - this leaks into depending on the execution environment, which we all know is the path to dependency madness. how to avoid? dockerize? nix? [web container](https://twitter.com/litbid/status/1658154530385670150)?
+  - Modal has an interesting possibility: generate functions that speak modal which also solves the dependency thing https://twitter.com/akshat_b/status/1658146096902811657
+- **self-heal** by running the code itself and use errors as information for reprompting 
+  - however its a bit hard to get errors from the chrome extension environment so we did not try this
+- **using anthropic as the coding layer**
+  - you can run `modal run anthropic.py --prompt prompt.md --outputdir=anthropic` to try it
+  - but it doesnt work because anthropic doesnt follow instructions to generate file code very well.
+- **make agents that autonomously run this code in a loop/watch the prompt file** and regenerate code each time, on a new git branch
+  - the code could be generated on 5 simultaneous git branches and checking their output would just involve switching git branches,# smol developer
+
+***Human-centric & Coherent Whole Program Synthesis*** aka your own personal junior developer
+
+> [Build the thing that builds the thing!](https://twitter.com/swyx/status/1657578738345979905) a `smol dev` for every dev in every situation
+
+this is a prototype of a ""junior developer"" agent (aka `smol dev`) that scaffolds an entire codebase out for you once you give it a product spec, but does not end the world or overpromise AGI. instead of making and maintaining specific, rigid, one-shot starters, like `create-react-app`, or `create-nextjs-app`, this is basically [`create-anything-app`](https://news.ycombinator.com/item?id=35942352) where you develop your scaffolding prompt in a tight loop with your smol dev.
+
+AI that is helpful, harmless, and honest is complemented by a codebase that is simple, safe, and smol - <200 lines of Python and Prompts, so this is easy to understand and customize.
+
+<p align=""center"">
+  <img height=200 src=""https://pbs.twimg.com/media/FwEzVCcaMAE7t4h?format=jpg&name=large"" />
+</p>
+
+
+*engineering with prompts, rather than prompt engineering* 
+
+The demo example in `prompt.md` shows the potential of AI-enabled, but still firmly human developer centric, workflow:
+
+- Human writes a basic prompt for the app they want to build
+- `main.py` generates code
+- Human runs/reads the code
+- Human can:
+  - simply add to the prompt as they discover underspecified parts of the prompt,- **Markdown is all you need** - Markdown is the perfect way to prompt for whole program synthesis because it is easy to mix english and code (whether `variable_names` or entire \`\`\` code fenced code samples)
+  - turns out you can specify prompts in code in prompts and gpt4 obeys that to the letter
+- **Copy and paste programming**
+  - teaching the program to understand how to code around a new API (Anthropic's API is after GPT3's knowledge cutoff) by just pasting in the `curl` input and output
+  - pasting error messages into the prompt and vaguely telling the program how you'd like it handled. it kind of feels like ""logbook driven programming"".
+- **Debugging by `cat`ing** the whole codebase with your error message and getting specific fix suggestions - particularly delightful!
+- **Tricks for whole program coherence** - our chosen example usecase, Chrome extensions, have a lot of indirect dependencies across files. Any hallucination of cross dependencies causes the whole program to error. 
+  - We solved this by adding an intermediate step asking GPT to think through `shared_dependencies.md`, and then insisting on using that in generating each file. This basically means GPT is able to talk to itself...
+  - ... but it's not perfect, yet. `shared_dependencies.md` is sometimes not comperehensive in understanding what are hard dependencies between files. So we just solved it by specifying a specific `name` in the prompt. felt dirty at first but it works, and really it's just clear unambiguous communication at the end of the day. 
+  - see `prompt.md` for SOTA smol-dev prompting
+- **Low activation energy for unfamiliar APIs**","The purpose of the code in this repository is to create a ""junior developer"" agent that can scaffold an entire codebase based on a product spec provided by the user. The agent uses prompts written in Markdown to generate code, which the user can then manually run and modify as needed. The codebase is designed to be simple, safe, and under 200 lines of Python and Prompts. The agent can also suggest specific code changes using a debugger tool. The codebase is licensed under the MIT License.",100,2
+What is the point of the .env file?,https://github.com/smol-ai/developer,"# smol developer
+
+***Human-centric & Coherent Whole Program Synthesis*** aka your own personal junior developer
+
+> [Build the thing that builds the thing!](https://twitter.com/swyx/status/1657578738345979905) a `smol dev` for every dev in every situation
+
+this is a prototype of a ""junior developer"" agent (aka `smol dev`) that scaffolds an entire codebase out for you once you give it a product spec, but does not end the world or overpromise AGI. instead of making and maintaining specific, rigid, one-shot starters, like `create-react-app`, or `create-nextjs-app`, this is basically [`create-anything-app`](https://news.ycombinator.com/item?id=35942352) where you develop your scaffolding prompt in a tight loop with your smol dev.
+
+AI that is helpful, harmless, and honest is complemented by a codebase that is simple, safe, and smol - <200 lines of Python and Prompts, so this is easy to understand and customize.
+
+<p align=""center"">
+  <img height=200 src=""https://pbs.twimg.com/media/FwEzVCcaMAE7t4h?format=jpg&name=large"" />
+</p>
+
+
+*engineering with prompts, rather than prompt engineering* 
+
+The demo example in `prompt.md` shows the potential of AI-enabled, but still firmly human developer centric, workflow:
+
+- Human writes a basic prompt for the app they want to build
+- `main.py` generates code
+- Human runs/reads the code
+- Human can:
+  - simply add to the prompt as they discover underspecified parts of the prompt,## install
+
+it's basically: 
+
+- `git clone https://github.com/smol-ai/developer`.
+- copy over `.example.env` to `.env` filling in your API keys.
+
+There are no python dependencies to wrangle thanks to using Modal as a [self-provisioning runtime](https://www.google.com/search?q=self+provisioning+runtime).
+
+Unfortunately this project also uses 3 waitlisted things:
+
+- Modal.com - `pip install modal-client` (private beta - hit up the modal team to get an invite, and login)
+  - You can run this project w/o Modal following these instructions:
+  - `pip install -r requirements.txt`
+  - `python main_no_modal.py YOUR_PROMPT_HERE`
+- GPT-4 api (private beta) - can use 3.5 but obviously wont be as good
+- (for the demo project) anthropic claude 100k context api (private beta)
+
+> yes, the most important skill in being an ai engineer is social engineering to get off waitlists. Modal will let you in if you say the keyword ""swyx""
+
+you'll have to adapt this code on a fork if you want to use it on other infra. please open issues/PRs and i'll happily highlight your fork here.
+
+### trying the example chrome extension,- simply add to the prompt as they discover underspecified parts of the prompt
+  - manually runs the code and identifies errors
+  - *paste the error into the prompt* just like they would file a github issue
+  - for extra help, they can use `debugger.py` which reads the whole codebase to make specific code change suggestions
+
+Loop until happiness is attained. Notice that AI is only used as long as it is adding value - once it gets in your way, just take over the codebase from your smol junior developer with no fuss and no hurt feelings. (*we could also have smol-dev take over an existing codebase and bootstrap its own prompt... but that's a Future Direction*)
+
+*Not no code, not low code, but some third thing.* 
+
+Perhaps a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail at least to scaffold things out.
+
+## video demo
+
+[![https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg](https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg)](https://youtu.be/UCo7YeTy-aE)
+
+## arch diagram
+
+naturally generated with gpt4, like [we did for babyagi](https://twitter.com/swyx/status/1648724820316786688)
+![image](https://github.com/smol-ai/developer/assets/6764957/f8fc68f4-77f6-43ee-852f-a35fb195430a)
+
+
+### innovations and insights
+
+> Please subscribe to https://latent.space/ for a fuller writeup and insights and reflections,.env
+__pycache__
+.vscode
+# Ignore everything in the generated directory
+/generated/*
+
+# Don't ignore .png files in the generated directory
+!/generated/*.png,OPENAI_API_KEY=sk-xxxxxx
+ANTHROPIC_API_KEY=sk-ant-api03-xxxxxx","The .env file in the smol-ai/developer repository is used to store API keys for Modal, GPT-4, and Anthropoc Claude 100k Context API. It is necessary to copy over the .example.env file and fill in the API keys to use the project. The project is a prototype of a ""junior developer"" agent that scaffolds an entire codebase out for the user once they give it a product spec. The codebase is simple, safe, and less than 200 lines of Python and Prompts. The project uses prompts for engineering, rather than prompt engineering. The AI is only used as long as it is adding value, and the user can take over the codebase from the ""smol dev"" with no fuss and no hurt feelings.",100,0
+What is the point of the .env file?,https://github.com/smol-ai/developer,"# smol developer
+
+***Human-centric & Coherent Whole Program Synthesis*** aka your own personal junior developer
+
+> [Build the thing that builds the thing!](https://twitter.com/swyx/status/1657578738345979905) a `smol dev` for every dev in every situation
+
+this is a prototype of a ""junior developer"" agent (aka `smol dev`) that scaffolds an entire codebase out for you once you give it a product spec, but does not end the world or overpromise AGI. instead of making and maintaining specific, rigid, one-shot starters, like `create-react-app`, or `create-nextjs-app`, this is basically [`create-anything-app`](https://news.ycombinator.com/item?id=35942352) where you develop your scaffolding prompt in a tight loop with your smol dev.
+
+AI that is helpful, harmless, and honest is complemented by a codebase that is simple, safe, and smol - <200 lines of Python and Prompts, so this is easy to understand and customize.
+
+<p align=""center"">
+  <img height=200 src=""https://pbs.twimg.com/media/FwEzVCcaMAE7t4h?format=jpg&name=large"" />
+</p>
+
+
+*engineering with prompts, rather than prompt engineering* 
+
+The demo example in `prompt.md` shows the potential of AI-enabled, but still firmly human developer centric, workflow:
+
+- Human writes a basic prompt for the app they want to build
+- `main.py` generates code
+- Human runs/reads the code
+- Human can:
+  - simply add to the prompt as they discover underspecified parts of the prompt,## install
+
+it's basically: 
+
+- `git clone https://github.com/smol-ai/developer`.
+- copy over `.example.env` to `.env` filling in your API keys.
+
+There are no python dependencies to wrangle thanks to using Modal as a [self-provisioning runtime](https://www.google.com/search?q=self+provisioning+runtime).
+
+Unfortunately this project also uses 3 waitlisted things:
+
+- Modal.com - `pip install modal-client` (private beta - hit up the modal team to get an invite, and login)
+  - You can run this project w/o Modal following these instructions:
+  - `pip install -r requirements.txt`
+  - `python main_no_modal.py YOUR_PROMPT_HERE`
+- GPT-4 api (private beta) - can use 3.5 but obviously wont be as good
+- (for the demo project) anthropic claude 100k context api (private beta)
+
+> yes, the most important skill in being an ai engineer is social engineering to get off waitlists. Modal will let you in if you say the keyword ""swyx""
+
+you'll have to adapt this code on a fork if you want to use it on other infra. please open issues/PRs and i'll happily highlight your fork here.
+
+### trying the example chrome extension,- simply add to the prompt as they discover underspecified parts of the prompt
+  - manually runs the code and identifies errors
+  - *paste the error into the prompt* just like they would file a github issue
+  - for extra help, they can use `debugger.py` which reads the whole codebase to make specific code change suggestions
+
+Loop until happiness is attained. Notice that AI is only used as long as it is adding value - once it gets in your way, just take over the codebase from your smol junior developer with no fuss and no hurt feelings. (*we could also have smol-dev take over an existing codebase and bootstrap its own prompt... but that's a Future Direction*)
+
+*Not no code, not low code, but some third thing.* 
+
+Perhaps a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail at least to scaffold things out.
+
+## video demo
+
+[![https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg](https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg)](https://youtu.be/UCo7YeTy-aE)
+
+## arch diagram
+
+naturally generated with gpt4, like [we did for babyagi](https://twitter.com/swyx/status/1648724820316786688)
+![image](https://github.com/smol-ai/developer/assets/6764957/f8fc68f4-77f6-43ee-852f-a35fb195430a)
+
+
+### innovations and insights
+
+> Please subscribe to https://latent.space/ for a fuller writeup and insights and reflections,OPENAI_API_KEY=sk-xxxxxx
+ANTHROPIC_API_KEY=sk-ant-api03-xxxxxx,.env
+__pycache__
+.vscode
+# Ignore everything in the generated directory
+/generated/*
+
+# Don't ignore .png files in the generated directory
+!/generated/*.png","The .env file in the smol-ai/developer repository contains API keys for Modal and Anthropics, which are used in the code. The file should be copied from .example.env and filled in with the appropriate keys. The codebase is designed to be simple and customizable, with a focus on human-centric and coherent whole program synthesis. The project uses AI to scaffold code based on prompts provided by the user, and the AI is only used as long as it adds value. The project is still in development and uses private beta APIs, so adaptation may be necessary to use it on other infrastructures.",90,1
+What is the point of the .env file?,https://github.com/smol-ai/developer,"# smol developer
+
+***Human-centric & Coherent Whole Program Synthesis*** aka your own personal junior developer
+
+> [Build the thing that builds the thing!](https://twitter.com/swyx/status/1657578738345979905) a `smol dev` for every dev in every situation
+
+this is a prototype of a ""junior developer"" agent (aka `smol dev`) that scaffolds an entire codebase out for you once you give it a product spec, but does not end the world or overpromise AGI. instead of making and maintaining specific, rigid, one-shot starters, like `create-react-app`, or `create-nextjs-app`, this is basically [`create-anything-app`](https://news.ycombinator.com/item?id=35942352) where you develop your scaffolding prompt in a tight loop with your smol dev.
+
+AI that is helpful, harmless, and honest is complemented by a codebase that is simple, safe, and smol - <200 lines of Python and Prompts, so this is easy to understand and customize.
+
+<p align=""center"">
+  <img height=200 src=""https://pbs.twimg.com/media/FwEzVCcaMAE7t4h?format=jpg&name=large"" />
+</p>
+
+
+*engineering with prompts, rather than prompt engineering* 
+
+The demo example in `prompt.md` shows the potential of AI-enabled, but still firmly human developer centric, workflow:
+
+- Human writes a basic prompt for the app they want to build
+- `main.py` generates code
+- Human runs/reads the code
+- Human can:
+  - simply add to the prompt as they discover underspecified parts of the prompt,## install
+
+it's basically: 
+
+- `git clone https://github.com/smol-ai/developer`.
+- copy over `.example.env` to `.env` filling in your API keys.
+
+There are no python dependencies to wrangle thanks to using Modal as a [self-provisioning runtime](https://www.google.com/search?q=self+provisioning+runtime).
+
+Unfortunately this project also uses 3 waitlisted things:
+
+- Modal.com - `pip install modal-client` (private beta - hit up the modal team to get an invite, and login)
+  - You can run this project w/o Modal following these instructions:
+  - `pip install -r requirements.txt`
+  - `python main_no_modal.py YOUR_PROMPT_HERE`
+- GPT-4 api (private beta) - can use 3.5 but obviously wont be as good
+- (for the demo project) anthropic claude 100k context api (private beta)
+
+> yes, the most important skill in being an ai engineer is social engineering to get off waitlists. Modal will let you in if you say the keyword ""swyx""
+
+you'll have to adapt this code on a fork if you want to use it on other infra. please open issues/PRs and i'll happily highlight your fork here.
+
+### trying the example chrome extension,- simply add to the prompt as they discover underspecified parts of the prompt
+  - manually runs the code and identifies errors
+  - *paste the error into the prompt* just like they would file a github issue
+  - for extra help, they can use `debugger.py` which reads the whole codebase to make specific code change suggestions
+
+Loop until happiness is attained. Notice that AI is only used as long as it is adding value - once it gets in your way, just take over the codebase from your smol junior developer with no fuss and no hurt feelings. (*we could also have smol-dev take over an existing codebase and bootstrap its own prompt... but that's a Future Direction*)
+
+*Not no code, not low code, but some third thing.* 
+
+Perhaps a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail at least to scaffold things out.
+
+## video demo
+
+[![https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg](https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg)](https://youtu.be/UCo7YeTy-aE)
+
+## arch diagram
+
+naturally generated with gpt4, like [we did for babyagi](https://twitter.com/swyx/status/1648724820316786688)
+![image](https://github.com/smol-ai/developer/assets/6764957/f8fc68f4-77f6-43ee-852f-a35fb195430a)
+
+
+### innovations and insights
+
+> Please subscribe to https://latent.space/ for a fuller writeup and insights and reflections,.env
+__pycache__
+.vscode
+# Ignore everything in the generated directory
+/generated/*
+
+# Don't ignore .png files in the generated directory
+!/generated/*.png,OPENAI_API_KEY=sk-xxxxxx
+ANTHROPIC_API_KEY=sk-ant-api03-xxxxxx","Using a .env file in the smol-ai/developer repository provides benefits such as allowing users to store API keys and other sensitive information securely. It also simplifies the installation process by not requiring any Python dependencies to be installed. However, the project currently relies on some private beta APIs and services, which may require users to be on a waitlist or have special access. Overall, using a .env file can improve security and ease of use for the smol-ai/developer repository.",90,2
+Can my junior dev create a website?,https://github.com/smol-ai/developer,"# smol developer
+
+***Human-centric & Coherent Whole Program Synthesis*** aka your own personal junior developer
+
+> [Build the thing that builds the thing!](https://twitter.com/swyx/status/1657578738345979905) a `smol dev` for every dev in every situation
+
+this is a prototype of a ""junior developer"" agent (aka `smol dev`) that scaffolds an entire codebase out for you once you give it a product spec, but does not end the world or overpromise AGI. instead of making and maintaining specific, rigid, one-shot starters, like `create-react-app`, or `create-nextjs-app`, this is basically [`create-anything-app`](https://news.ycombinator.com/item?id=35942352) where you develop your scaffolding prompt in a tight loop with your smol dev.
+
+AI that is helpful, harmless, and honest is complemented by a codebase that is simple, safe, and smol - <200 lines of Python and Prompts, so this is easy to understand and customize.
+
+<p align=""center"">
+  <img height=200 src=""https://pbs.twimg.com/media/FwEzVCcaMAE7t4h?format=jpg&name=large"" />
+</p>
+
+
+*engineering with prompts, rather than prompt engineering* 
+
+The demo example in `prompt.md` shows the potential of AI-enabled, but still firmly human developer centric, workflow:
+
+- Human writes a basic prompt for the app they want to build
+- `main.py` generates code
+- Human runs/reads the code
+- Human can:
+  - simply add to the prompt as they discover underspecified parts of the prompt,- simply add to the prompt as they discover underspecified parts of the prompt
+  - manually runs the code and identifies errors
+  - *paste the error into the prompt* just like they would file a github issue
+  - for extra help, they can use `debugger.py` which reads the whole codebase to make specific code change suggestions
+
+Loop until happiness is attained. Notice that AI is only used as long as it is adding value - once it gets in your way, just take over the codebase from your smol junior developer with no fuss and no hurt feelings. (*we could also have smol-dev take over an existing codebase and bootstrap its own prompt... but that's a Future Direction*)
+
+*Not no code, not low code, but some third thing.* 
+
+Perhaps a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail at least to scaffold things out.
+
+## video demo
+
+[![https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg](https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg)](https://youtu.be/UCo7YeTy-aE)
+
+## arch diagram
+
+naturally generated with gpt4, like [we did for babyagi](https://twitter.com/swyx/status/1648724820316786688)
+![image](https://github.com/smol-ai/developer/assets/6764957/f8fc68f4-77f6-43ee-852f-a35fb195430a)
+
+
+### innovations and insights
+
+> Please subscribe to https://latent.space/ for a fuller writeup and insights and reflections,modal-client
+openai
+tiktoken,## install
+
+it's basically: 
+
+- `git clone https://github.com/smol-ai/developer`.
+- copy over `.example.env` to `.env` filling in your API keys.
+
+There are no python dependencies to wrangle thanks to using Modal as a [self-provisioning runtime](https://www.google.com/search?q=self+provisioning+runtime).
+
+Unfortunately this project also uses 3 waitlisted things:
+
+- Modal.com - `pip install modal-client` (private beta - hit up the modal team to get an invite, and login)
+  - You can run this project w/o Modal following these instructions:
+  - `pip install -r requirements.txt`
+  - `python main_no_modal.py YOUR_PROMPT_HERE`
+- GPT-4 api (private beta) - can use 3.5 but obviously wont be as good
+- (for the demo project) anthropic claude 100k context api (private beta)
+
+> yes, the most important skill in being an ai engineer is social engineering to get off waitlists. Modal will let you in if you say the keyword ""swyx""
+
+you'll have to adapt this code on a fork if you want to use it on other infra. please open issues/PRs and i'll happily highlight your fork here.
+
+### trying the example chrome extension,### trying the example chrome extension
+
+the `/generated` and `/exampleChromeExtension` folder contains `a Chrome Manifest V3 extension that reads the current page, and offers a popup UI that has the page title+content and a textarea for a prompt (with a default value we specify). When the user hits submit, it sends the page title+content to the Anthropic Claude API along with the up to date prompt to summarize it. The user can modify that prompt and re-send the prompt+content to get another summary view of the content.`
+
+- go to Manage Extensions in Chrome
+- load unpacked
+- find the relevant folder in your file system and load it
+- go to any content heavy site
+- click the cute bird
+- see it work
+
+this entire extension was generated by the prompt in `prompt.md` (except for the images), and was built up over time by adding more words to the prompt in an iterative process.
+
+## smol dev
+
+basic usage
+
+```bash
+modal run main.py --prompt ""a Chrome extension that, when clicked, opens a small window with a page where you can enter a prompt for reading the currently open page and generating some response from openai""   
+```
+
+after a while of adding to your prompt, you can extract your prompt to a file, as long as your ""prompt"" ends in a .md extension we'll go look for that file
+
+```bash
+modal run main.py --prompt prompt.md   
+```
+
+each time you run this, the generated directory is deleted (except for images) and all files are rewritten from scratch. 
+
+In the `shared_dependencies.md` file is a helper file that ensures coherence between files.","The smol-ai/developer repository contains a prototype of a ""junior developer"" agent that can scaffold an entire codebase for a website based on a product spec. This agent is called a ""smol dev"" and is designed to be helpful, harmless, and honest. The codebase is simple, safe, and less than 200 lines of Python and Prompts, making it easy to understand and customize. The workflow involves writing a basic prompt for the app, generating code with `main.py`, manually running and identifying errors, and pasting the error into the prompt. The AI is only used as long as it adds value, and the developer can take over the codebase from the smol junior developer at any time. The repository also includes a Chrome extension that was generated by the prompt in `prompt.md`. To use the smol dev, clone the repository and copy over `.example.env` to `.env`, filling in your API keys. There are no Python dependencies to wrangle thanks to using Modal as a self-provisioning runtime. However, the project uses three waitlisted things: Modal.com, GPT-4 API, and anthropic claude 100k context API. The most important skill in being an AI engineer is social engineering to get off waitlists.",90,0
+Can my junior dev create a website?,https://github.com/smol-ai/developer,"# smol developer
+
+***Human-centric & Coherent Whole Program Synthesis*** aka your own personal junior developer
+
+> [Build the thing that builds the thing!](https://twitter.com/swyx/status/1657578738345979905) a `smol dev` for every dev in every situation
+
+this is a prototype of a ""junior developer"" agent (aka `smol dev`) that scaffolds an entire codebase out for you once you give it a product spec, but does not end the world or overpromise AGI. instead of making and maintaining specific, rigid, one-shot starters, like `create-react-app`, or `create-nextjs-app`, this is basically [`create-anything-app`](https://news.ycombinator.com/item?id=35942352) where you develop your scaffolding prompt in a tight loop with your smol dev.
+
+AI that is helpful, harmless, and honest is complemented by a codebase that is simple, safe, and smol - <200 lines of Python and Prompts, so this is easy to understand and customize.
+
+<p align=""center"">
+  <img height=200 src=""https://pbs.twimg.com/media/FwEzVCcaMAE7t4h?format=jpg&name=large"" />
+</p>
+
+
+*engineering with prompts, rather than prompt engineering* 
+
+The demo example in `prompt.md` shows the potential of AI-enabled, but still firmly human developer centric, workflow:
+
+- Human writes a basic prompt for the app they want to build
+- `main.py` generates code
+- Human runs/reads the code
+- Human can:
+  - simply add to the prompt as they discover underspecified parts of the prompt,- simply add to the prompt as they discover underspecified parts of the prompt
+  - manually runs the code and identifies errors
+  - *paste the error into the prompt* just like they would file a github issue
+  - for extra help, they can use `debugger.py` which reads the whole codebase to make specific code change suggestions
+
+Loop until happiness is attained. Notice that AI is only used as long as it is adding value - once it gets in your way, just take over the codebase from your smol junior developer with no fuss and no hurt feelings. (*we could also have smol-dev take over an existing codebase and bootstrap its own prompt... but that's a Future Direction*)
+
+*Not no code, not low code, but some third thing.* 
+
+Perhaps a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail at least to scaffold things out.
+
+## video demo
+
+[![https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg](https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg)](https://youtu.be/UCo7YeTy-aE)
+
+## arch diagram
+
+naturally generated with gpt4, like [we did for babyagi](https://twitter.com/swyx/status/1648724820316786688)
+![image](https://github.com/smol-ai/developer/assets/6764957/f8fc68f4-77f6-43ee-852f-a35fb195430a)
+
+
+### innovations and insights
+
+> Please subscribe to https://latent.space/ for a fuller writeup and insights and reflections,modal-client
+openai
+tiktoken,## install
+
+it's basically: 
+
+- `git clone https://github.com/smol-ai/developer`.
+- copy over `.example.env` to `.env` filling in your API keys.
+
+There are no python dependencies to wrangle thanks to using Modal as a [self-provisioning runtime](https://www.google.com/search?q=self+provisioning+runtime).
+
+Unfortunately this project also uses 3 waitlisted things:
+
+- Modal.com - `pip install modal-client` (private beta - hit up the modal team to get an invite, and login)
+  - You can run this project w/o Modal following these instructions:
+  - `pip install -r requirements.txt`
+  - `python main_no_modal.py YOUR_PROMPT_HERE`
+- GPT-4 api (private beta) - can use 3.5 but obviously wont be as good
+- (for the demo project) anthropic claude 100k context api (private beta)
+
+> yes, the most important skill in being an ai engineer is social engineering to get off waitlists. Modal will let you in if you say the keyword ""swyx""
+
+you'll have to adapt this code on a fork if you want to use it on other infra. please open issues/PRs and i'll happily highlight your fork here.
+
+### trying the example chrome extension,- **ability to install its own dependencies**
+  - this leaks into depending on the execution environment, which we all know is the path to dependency madness. how to avoid? dockerize? nix? [web container](https://twitter.com/litbid/status/1658154530385670150)?
+  - Modal has an interesting possibility: generate functions that speak modal which also solves the dependency thing https://twitter.com/akshat_b/status/1658146096902811657
+- **self-heal** by running the code itself and use errors as information for reprompting 
+  - however its a bit hard to get errors from the chrome extension environment so we did not try this
+- **using anthropic as the coding layer**
+  - you can run `modal run anthropic.py --prompt prompt.md --outputdir=anthropic` to try it
+  - but it doesnt work because anthropic doesnt follow instructions to generate file code very well.
+- **make agents that autonomously run this code in a loop/watch the prompt file** and regenerate code each time, on a new git branch
+  - the code could be generated on 5 simultaneous git branches and checking their output would just involve switching git branches","Yes, the smol-ai/developer repository provides a prototype of a ""junior developer"" agent called `smol dev` that can scaffold an entire codebase for a website once given a product spec. This agent is designed to be helpful, harmless, and honest, and is complemented by a codebase that is simple, safe, and less than 200 lines of Python and Prompts, making it easy to understand and customize. The `smol dev` works by generating code based on prompts written by a human, who can then manually run and read the code, identify errors, and paste the error into the prompt just like filing a Github issue. The `smol dev` is not a no-code or low-code solution, but rather a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail to scaffold things out. To use the `smol dev`, you need to clone the repository and copy over `.example.env` to `.env`, filling in your API keys. However, this project also uses some private beta APIs, so you may need to adapt the code on a fork if you want to use it on other infra.",90,1
+Can my junior dev create a website?,https://github.com/smol-ai/developer,"# smol developer
+
+***Human-centric & Coherent Whole Program Synthesis*** aka your own personal junior developer
+
+> [Build the thing that builds the thing!](https://twitter.com/swyx/status/1657578738345979905) a `smol dev` for every dev in every situation
+
+this is a prototype of a ""junior developer"" agent (aka `smol dev`) that scaffolds an entire codebase out for you once you give it a product spec, but does not end the world or overpromise AGI. instead of making and maintaining specific, rigid, one-shot starters, like `create-react-app`, or `create-nextjs-app`, this is basically [`create-anything-app`](https://news.ycombinator.com/item?id=35942352) where you develop your scaffolding prompt in a tight loop with your smol dev.
+
+AI that is helpful, harmless, and honest is complemented by a codebase that is simple, safe, and smol - <200 lines of Python and Prompts, so this is easy to understand and customize.
+
+<p align=""center"">
+  <img height=200 src=""https://pbs.twimg.com/media/FwEzVCcaMAE7t4h?format=jpg&name=large"" />
+</p>
+
+
+*engineering with prompts, rather than prompt engineering* 
+
+The demo example in `prompt.md` shows the potential of AI-enabled, but still firmly human developer centric, workflow:
+
+- Human writes a basic prompt for the app they want to build
+- `main.py` generates code
+- Human runs/reads the code
+- Human can:
+  - simply add to the prompt as they discover underspecified parts of the prompt,- simply add to the prompt as they discover underspecified parts of the prompt
+  - manually runs the code and identifies errors
+  - *paste the error into the prompt* just like they would file a github issue
+  - for extra help, they can use `debugger.py` which reads the whole codebase to make specific code change suggestions
+
+Loop until happiness is attained. Notice that AI is only used as long as it is adding value - once it gets in your way, just take over the codebase from your smol junior developer with no fuss and no hurt feelings. (*we could also have smol-dev take over an existing codebase and bootstrap its own prompt... but that's a Future Direction*)
+
+*Not no code, not low code, but some third thing.* 
+
+Perhaps a higher order evolution of programming where you still need to be technical, but no longer have to implement every detail at least to scaffold things out.
+
+## video demo
+
+[![https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg](https://i3.ytimg.com/vi/UCo7YeTy-aE/hqdefault.jpg)](https://youtu.be/UCo7YeTy-aE)
+
+## arch diagram
+
+naturally generated with gpt4, like [we did for babyagi](https://twitter.com/swyx/status/1648724820316786688)
+![image](https://github.com/smol-ai/developer/assets/6764957/f8fc68f4-77f6-43ee-852f-a35fb195430a)
+
+
+### innovations and insights
+
+> Please subscribe to https://latent.space/ for a fuller writeup and insights and reflections,## install
+
+it's basically: 
+
+- `git clone https://github.com/smol-ai/developer`.
+- copy over `.example.env` to `.env` filling in your API keys.
+
+There are no python dependencies to wrangle thanks to using Modal as a [self-provisioning runtime](https://www.google.com/search?q=self+provisioning+runtime).
+
+Unfortunately this project also uses 3 waitlisted things:
+
+- Modal.com - `pip install modal-client` (private beta - hit up the modal team to get an invite, and login)
+  - You can run this project w/o Modal following these instructions:
+  - `pip install -r requirements.txt`
+  - `python main_no_modal.py YOUR_PROMPT_HERE`
+- GPT-4 api (private beta) - can use 3.5 but obviously wont be as good
+- (for the demo project) anthropic claude 100k context api (private beta)
+
+> yes, the most important skill in being an ai engineer is social engineering to get off waitlists. Modal will let you in if you say the keyword ""swyx""
+
+you'll have to adapt this code on a fork if you want to use it on other infra. please open issues/PRs and i'll happily highlight your fork here.
+
+### trying the example chrome extension,- **ability to install its own dependencies**
+  - this leaks into depending on the execution environment, which we all know is the path to dependency madness. how to avoid? dockerize? nix? [web container](https://twitter.com/litbid/status/1658154530385670150)?
+  - Modal has an interesting possibility: generate functions that speak modal which also solves the dependency thing https://twitter.com/akshat_b/status/1658146096902811657
+- **self-heal** by running the code itself and use errors as information for reprompting 
+  - however its a bit hard to get errors from the chrome extension environment so we did not try this
+- **using anthropic as the coding layer**
+  - you can run `modal run anthropic.py --prompt prompt.md --outputdir=anthropic` to try it
+  - but it doesnt work because anthropic doesnt follow instructions to generate file code very well.
+- **make agents that autonomously run this code in a loop/watch the prompt file** and regenerate code each time, on a new git branch
+  - the code could be generated on 5 simultaneous git branches and checking their output would just involve switching git branches,modal-client
+openai
+tiktoken","To efficiently and effectively create a website using the smol-ai/developer repository, a junior developer can leverage the ""smol dev"" agent that scaffolds an entire codebase based on a product spec. This prototype AI-enabled workflow is human-centric and allows for customization and understanding with less than 200 lines of Python and Prompts. The developer can write a basic prompt for the app they want to build, generate code with main.py, run/read the code, and add to the prompt as they discover underspecified parts. The AI is only used as long as it adds value, and the developer can take over the codebase from the ""smol dev"" with no fuss. The repository requires Modal.com, GPT-4 API, and anthropic claude 100k context API, which are private beta, but the code can be adapted on a fork for other infrastructures. The repository also discusses potential challenges such as dependency management and self-healing.",90,2
