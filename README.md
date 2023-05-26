@@ -1,60 +1,54 @@
-# README
+# Repo Chat
 
-## Overview
+Repo Chat is a project that uses large language models like GPT-3.5-turbo to answer questions about code repositories. It leverages document retrieval with Pinecone, Langchain, and OpenAI to make it easier for users to ask questions about code and get relevant information quickly.
 
-This repository demonstrates a Python implementation of Retrieval Augmented Generation (RAG) using Langchain, Pinecone, and OpenAI's Text-Embedding-ADA-002 and gpt-3.5-turbo models. The provided example.ipynb Jupyter notebook can be used to interact with the implementation.
-
-## Requirements
-
-To install the required packages, run the following command:
-
-```sh
-pip install -r requirements.txt
-```
+This README contains instructions on how to run the provided Jupyter notebooks and understand their purpose. It also includes information about the required dependencies and configuration.
 
 ## Getting Started
 
-1. Clone the repository to your local machine.
-2. Open the example.ipynb notebook in Jupyter.
-3. Follow the instructions provided in the notebook to interact with the chatbot.
+Install dependencies: `pip install -r requirements.txt`
 
-### Create vectorstore
+## Jupyter Notebooks
 
-```python
-# Create vectorstore, this will take a while
-repo = "https://github.com/smol-ai/developer"
-git2vectors.create_vectorstore(repo)
+This project contains two Jupyter notebooks:
 
-# Load vectorstore, this is fast
-vectorstore = git2vectors.get_vectorstore()
-```
-  
-### Sample Chatbot Usage
+### evaluation.ipynb
 
-```python
-# Create an instance of the class
-chain = RetrievalChain(vectorstore)
+This notebook evaluates different queries using the MultiQueryEvaluator class. It sends a list of queries to the evaluator and evaluates the responses. The results are then exported to two CSV files: `eval_chainlogs.csv` and `eval_responses.csv`.
 
-# Let's say we have a query
-query = "Give me a cool use case for this library - create the prompt file to generate this use case."
+### example.ipynb
 
-# Generic retrieval query
-response = chain.chat(query)
-Markdown(response['text'])
-```
+This notebook demonstrates the practical use of Code2Prompt Library. It contains examples of generating a Chrome extension based on natural language prompts. The generated extension can be found in the `/generated` and `/exampleChromeExtension` folders.
 
-### repo_chat Layout
+## Dependencies
 
-- `chain_manager.py`: A class to manage creating and storing chains/OpenAI credentials.
-- `chat_utils.py`: A class for managing interactions with a large language model using document retrieval from a GitHub repo.
-- `custom_loaders.py`: Custom loader for fetching files from a Git repository into a list of documents.
-- `eval_utils.py`: Classes for evaluating query responses using the `CriticChain`, `QueryEvaluator`, and `MultiQueryEvaluator`.
-- `git2vectors.py`: Main script for creating and getting the Pinecone vectorstore from a Git repository.
+The following dependencies are required to run this project:
 
-## Customization & Future Directions
+- PyGithub
+- langchain
+- pinecone-client
+- pandas
+- matplotlib
+- numpy
+- ipywidgets
+- uuid
+- python-dotenv
 
-1. Optimizing prompts for high performance in latency and response quality
-2. Creating an interface for users to interact with this system outside of jupyter
-3. And more!
+## Configuration
 
-Please feel free to explore the code, experiment with different settings, and customize the implementation to suit your requirements.
+A `.env` file containing the following keys is required:
+
+- `OPENAI_API_KEY`: OpenAI API key
+- `PINECONE_API_KEY`: Pinecone API key
+
+Make sure to set these keys before running the notebooks.
+
+## repo_chat Directory
+
+The `repo_chat` directory contains Python modules that implement chain managers, chat utilities, evaluation utilities, vector embeddings, and other functions required to run the Repo Chat project.
+
+- `chain_manager.py`: Manages creating and storing chains/OpenAI credentials.
+- `chat_utils.py`: Provides classes for chatting with a large language model using document retrieval from GitHub repo.
+- `eval_utils.py`: Contains functionalities related to evaluation of queries and logging responses from models.
+- `git2vectors.py`: Implements functionalities to fetch, process, and create vector stores from Git repositories using Pinecone and OpenAI.
+- `templates.py`: Contains templates for different tasks, such as upgrading queries, running queries, validating context, and scoring responses.
