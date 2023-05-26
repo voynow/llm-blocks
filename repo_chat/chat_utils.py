@@ -15,34 +15,36 @@ class RetrievalChain:
     It leverages the langchain library to facilitate the retrieval and chat operations.
     """
 
-    def __init__(self, vectorstore):
+    def __init__(self, vectorstore, repo):
         """
         Initialize the class with the given vectorstore and chain manager.
         """
         self.vectorstore = vectorstore
+        self.repo = repo
         self.chainlogs = []
 
     def log_entry(self, chain_name, input_data, output_data, exec_time):
         """Log the given method, input_data, output_data and execution time"""
         self.chainlogs.append({
-            "timestamp": time.time(),
             "chain_name": chain_name,
             "input_data": json.dumps(input_data),
-            "output_data": json.dumps(output_data['text']),
+            "output_data": output_data['text'],
             "execution_time": exec_time
         })
 
-    def get_chain_inputs(self, query, k=5):
+    def get_chain_inputs(self, query, get_docs=True):
         """
         Retrieve similar documents from vectorstore based on the given query.
         Prepare the chain inputs using these documents.
         """
-        docs = self.vectorstore.similarity_search_with_score(query, k=k)
         chain_inputs = {
             "query": query,
-            "similar_documents": [doc.page_content for doc, _ in docs],
+            "repo": self.repo,
         }
-        return chain_inputs, docs
+        if get_docs:
+            docs = self.vectorstore.similarity_search_with_score(query, k=5)
+            chain_inputs["similar_documents"] = [doc.page_content for doc, _ in docs]
+        return chain_inputs
     
     def call_chain(self, chain, input_data):
         """Call the given chain and log the execution time"""
@@ -57,9 +59,9 @@ class RetrievalChain:
         Process the given query using the context_validator and run_query chains.
         If sufficient context is present, return the result of run_query.
         """
-        chain_inputs, docs = self.get_chain_inputs(query)
-        val_resp = self.call_chain(context_validator, chain_inputs)["text"]
-        sufficient_context = int(val_resp.lower())
+        chain_inputs = self.get_chain_inputs(query)
+        val_resp = self.call_chain(context_validator, chain_inputs)
+        sufficient_context = int(val_resp["text"].lower())
         if sufficient_context > context_threshold:
             return self.call_chain(run_query, chain_inputs)
         else:
@@ -72,8 +74,9 @@ class RetrievalChain:
         For each query retrieved from the upgrade_query response,
         process the query and return the answer if found.
         """
-        upgrade_query_resp = self.call_chain(upgrade_query, query)["text"]
-        for q in upgrade_query_resp.split("\n"):
+        chain_inputs = self.get_chain_inputs(query, get_docs=False)
+        upgrade_query_resp = self.call_chain(upgrade_query, chain_inputs)
+        for q in upgrade_query_resp["text"].split("\n"):
             refined_query = q.lstrip("0123456789. ")
             answer = self.process_query(
                 refined_query, context_validator, run_query, context_threshold
