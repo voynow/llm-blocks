@@ -7,24 +7,30 @@ class CriticChain:
     def __init__(self):
         self.chain = chain_manager.get_chain("CRITIC")
 
-    def score(self, query, response):
+    def score(self, query, response, repo):
         """Score a given response to a query"""
-        inputs = {"query": query, "response": response}
+        inputs = {"query": query, "response": response, "repo": repo}
         return self.chain(inputs)
 
 
 class QueryEvaluator:
-    def __init__(self, get_vectorstore, query, runs_per_query):
+    def __init__(self, get_vectorstore, query, repo, runs_per_query=5):
         self.get_vectorstore = get_vectorstore
         self.query = query
         self.runs_per_query = runs_per_query
+        self.repo = repo
+        self.critic = CriticChain()
 
-    def score_response(self, chain, query):
+    def score_response(self, chain, query, query_id):
         """Score a response using CriticChain"""
-        critic = CriticChain()
         response = chain.chat(query)
-        score = critic.score(query, response["text"])
+        score = self.critic.score(query, response["text"], self.repo)
         response['score'] = score['text']
+
+        # add query_id to response and chainlogs
+        response['query_id'] = query_id
+        for log in chain.chainlogs:
+            log['query_id'] = query_id
 
         return {
             'chainlogs': chain.chainlogs,
@@ -34,30 +40,34 @@ class QueryEvaluator:
     def evaluate(self):
         """Evaluate RetrievalChain using CriticChain to score responses"""
         responses = []
-        for _ in range(self.runs_per_query):
+        for query_id in range(self.runs_per_query):
             vectorstore = self.get_vectorstore()
-            chain = RetrievalChain(vectorstore)
-            response = self.score_response(chain, self.query)
+            chain = RetrievalChain(vectorstore, self.repo)
+            response = self.score_response(chain, self.query, query_id)
             responses.append(response)
 
         return responses
 
 
 class MultiQueryEvaluator:
-    def __init__(self, get_vectorstore, queries, runs_per_query):
+    def __init__(self, get_vectorstore, queries, repo, runs_per_query=5):
         self.get_vectorstore = get_vectorstore
         self.queries = queries
         self.runs_per_query = runs_per_query
+        self.repo = repo
+        self.log_user_message()
+
+    def log_user_message(self):
         print("MultiQueryEvaluator initialized with the following configurations:")
-        print(f"Number of queries: {len(queries)}")
-        print(f"Runs per query: {runs_per_query}")
-        print(f"Total evaluations: {len(queries) * runs_per_query}")
+        print(f"Number of queries: {len(self.queries)}")
+        print(f"Runs per query: {self.runs_per_query}")
+        print(f"Total evaluations: {len(self.queries) * self.runs_per_query}")
         print("Parallelized by query using concurrent.futures.ProcessPoolExecutor")
 
     def run_query(self, query):
         """Run QueryEvaluator for a given query"""
         response = QueryEvaluator(
-            self.get_vectorstore, query, self.runs_per_query
+            self.get_vectorstore, query, self.repo, self.runs_per_query,
         ).evaluate()
         return query, response
 
