@@ -1,10 +1,5 @@
-import dotenv
 import json
-from langchain.prompts import PromptTemplate
-from langchain.chat_models import ChatOpenAI
-from langchain.chains import LLMChain
 from langchain.callbacks import get_openai_callback
-import os
 from repo_chat import chain_manager
 import time
 
@@ -17,7 +12,7 @@ class RetrievalChain:
 
     def __init__(self, vectorstore, repo):
         """
-        Initialize the class with the given vectorstore and chain manager.
+        Initialize the class with the given vectorstore
         """
         self.vectorstore = vectorstore
         self.repo = repo
@@ -113,3 +108,27 @@ class RetrievalChain:
                 return answer
             else:
                 return self.manage_workflow(query, context_validator, run_query)
+
+
+class RawChain:
+    """ Chain specific for raw code input
+    """
+    def __init__(self, repo_data):
+        """
+        Initialize the basic chain object
+        """
+        self.repo_data = repo_data
+
+    def chat(self, query):
+        """
+        Chat with the basic chain object
+        """
+        raw_chain = chain_manager.get_chain("RAW_CODE")
+
+        with get_openai_callback() as cb:
+            chain_inputs = {
+                "query": query,
+                "repo": self.repo_data,
+            }
+            output = raw_chain(chain_inputs)
+            return output
