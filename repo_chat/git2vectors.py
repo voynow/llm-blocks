@@ -51,11 +51,15 @@ def git_load_wrapper(repo, branch="main"):
         file_filter=filter_fn,
     ).load()
 
-    user_val = input(f"You are about to load {len(gitdata)} documents from the repo. Continue? (y/n) ")
-    if user_val.lower() != "y":
-        raise ValueError("User cancelled loading")
     return gitdata
 
+def repo_to_raw(repo_data):
+    """ Convert repo data to raw text """
+    raw_repo = ""
+    for item in repo_data:
+        if item.page_content:
+            raw_repo += f"{item.metadata['file_path']}:\n{item.page_content}\n\n"
+    return raw_repo
 
 def get_text_splitter():
     """ document splitter function

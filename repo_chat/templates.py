@@ -44,3 +44,13 @@ CRITIC = {
     Does the resonse answer the users query about some specific code repository? Score this response on a scale from 0 (completely irrelevant or incorrect) to 100 (perfectly helpful based on the users query). Return the numeric score only with no words.
     """
 }
+
+RAW_CODE = {
+    "input_variables": ["query", "repo"],
+    "template": """Python repository:
+    {repo}
+
+    Regarding the code above:
+    {query}
+    """
+}
