@@ -1,9 +1,8 @@
-PyGithub
 langchain
-pinecone-client
 pandas
 matplotlib
 numpy
 ipywidgets
 uuid
 python-dotenv
+git2vec
