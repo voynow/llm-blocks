@@ -4,5 +4,4 @@ exclude = [
     "*.ipynb",
     "eval_data",
     "docs",
-    "custome_loaders.py"
 ]

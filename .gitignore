@@ -1,6 +1,6 @@
 secrets_manager.py
 __pycache__
 venv
-data
+repo_loader_data
 .env
 .vscode
