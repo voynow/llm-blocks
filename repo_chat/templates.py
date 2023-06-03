@@ -46,9 +46,9 @@ CRITIC = {
 }
 
 RAW_CODE = {
-    "input_variables": ["query", "repo"],
-    "template": """Python repository:
-    {repo}
+    "input_variables": ["query", "repo_data"],
+    "template": """Here is my code repository:
+    {repo_data}
 
     Regarding the code above:
     {query}
