@@ -4,3 +4,6 @@ venv
 repo_loader_data
 .env
 .vscode
+dist
+repo_chat.egg-info
+build
