@@ -4,8 +4,8 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="repo-chat",
-    version="0.1.0",
+    name="repo_chat",
+    version="0.1.2",
     author="Jamie Voynow",
     author_email="voynow99@gmail.com",
     description="Using LLMS to facilitate document retrieval and chat operations",
