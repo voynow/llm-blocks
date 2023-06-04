@@ -8,6 +8,8 @@ from repo_chat import templates
 
 dotenv.load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise ValueError("OPENAI_API_KEY not found. Either create a .env file or set the environment variable.")
 
 
 class CustomChain:
