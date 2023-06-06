@@ -1,7 +1,7 @@
 import concurrent.futures
 import pandas as pd
-from repo_chat.chat_utils import  RetrievalChain
-from repo_chat import chain_manager
+from llm_blocks.chat_utils import  RetrievalChain
+from llm_blocks import chain_manager
 
 class CriticChain:
     def __init__(self):

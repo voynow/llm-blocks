@@ -4,14 +4,14 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="repo_chat",
-    version="0.1.3",
+    name="llm-blocks",
+    version="0.1.4",
     author="Jamie Voynow",
     author_email="voynow99@gmail.com",
     description="Using LLMS to facilitate document retrieval and chat operations",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/voynow/repo-chat",
+    url="https://github.com/voynow/llm-blocks",
     packages=find_packages(),
     install_requires=[
         'langchain',

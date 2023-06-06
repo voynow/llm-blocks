@@ -1,6 +1,6 @@
 import json
 from langchain.callbacks import get_openai_callback
-from repo_chat import chain_manager
+from llm_blocks import chain_manager
 import time
 
 

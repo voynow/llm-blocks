@@ -5,5 +5,5 @@ repo_loader_data
 .env
 .vscode
 dist
-repo_chat.egg-info
+llm_blocks.egg-info
 build
