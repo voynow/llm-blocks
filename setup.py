@@ -1,14 +1,14 @@
 from setuptools import setup, find_packages
 
-with open("README.md", "r", encoding="utf-8") as fh:
-    long_description = fh.read()
+with open("README.md", "r", encoding="utf-8") as f:
+    long_description = f.read()
 
 setup(
     name="llm-blocks",
-    version="0.1.4",
+    version="0.2.0",
     author="Jamie Voynow",
     author_email="voynow99@gmail.com",
-    description="Using LLMS to facilitate document retrieval and chat operations",
+    description="Simple interface for creating and managing LLM chains",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/voynow/llm-blocks",
@@ -19,7 +19,6 @@ setup(
         'matplotlib',
         'numpy',
         'ipywidgets',
-        'uuid',
         'python-dotenv',
         'git2vec'
     ],
