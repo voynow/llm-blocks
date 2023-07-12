@@ -15,12 +15,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'langchain',
-        'pandas',
-        'matplotlib',
-        'numpy',
-        'ipywidgets',
         'python-dotenv',
-        'git2vec'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
