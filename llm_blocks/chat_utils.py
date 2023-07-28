@@ -1,10 +1,9 @@
-import dotenv
-from langchain.callbacks import get_openai_callback
 import os
-from langchain.chat_models import ChatOpenAI
-from langchain.prompts import PromptTemplate
-from langchain.chains import LLMChain
+import re
 import time
+
+import dotenv
+import openai
 
 dotenv.load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -16,36 +15,45 @@ if not OPENAI_API_KEY:
 
 class GenericChain:
     def __init__(
-        self, template: str, model_name: str = "gpt-3.5-turbo", temperature: float = 0.2
+        self,
+        template: str,
+        role: str = "user",
+        model_name: str = "gpt-3.5-turbo",
+        temperature: float = 0.2,
     ):
-        llm = ChatOpenAI(
-            openai_api_key=OPENAI_API_KEY,
-            model_name=model_name,
-            temperature=temperature,
-        )
-        prompt = PromptTemplate.from_template(template)
-        self.chain = LLMChain(llm=llm, prompt=prompt)
+        self.template = template
+        self.input_variables = self._get_input_variables()
+        self.message = {"role": role, "content": None}
+        self.model_name = model_name
+        self.temperature = temperature
         self.logs = []
+
+    def chain(self, inputs: dict):
+        self.message['content'] = self.template.format(**inputs)
+        response = openai.ChatCompletion.create(
+            model=self.model_name,
+            messages=[self.message],
+            temperature=self.temperature,
+        )
+        return response.choices[0]['message']['content']
+
+    def _get_input_variables(self):
+        return re.findall(r"\{(\w+)\}", self.template)
 
     def __call__(self, *args, **kwargs):
         inputs = {}
         if args:
-            inputs = {
-                key: value
-                for key, value in zip(self.chain.prompt.input_variables, args)
-            }
+            inputs = {key: value for key, value in zip(self.input_variables, args)}
         if kwargs:
             inputs.update(kwargs)
 
         start_time = time.time()
-        with get_openai_callback() as cb:
-            response = self.chain(inputs)
+        response = self.chain(inputs)
         response_time = time.time() - start_time
 
         # Store logs in a list of dictionaries
         log_entry = {
             "inputs": inputs,
-            "callback": cb,
             "response": response,
             "response_time": response_time,
         }

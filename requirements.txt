@@ -1,8 +1,2 @@
-langchain
-pandas
-matplotlib
-numpy
-ipywidgets
-uuid
+openai
 python-dotenv
-git2vec
