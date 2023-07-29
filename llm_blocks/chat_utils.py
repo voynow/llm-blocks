@@ -90,6 +90,3 @@ class GenericChain:
         if self.stream:
             return self.stream_output(inputs) 
         return self.batch_output(inputs)
-            
-
-

@@ -1,5 +1,0 @@
-# Files or directories to exclude
-
-exclude = [
-    "*.ipynb",
-]

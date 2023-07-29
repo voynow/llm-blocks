@@ -1,67 +1,61 @@
-# LLM Blocks
+# LLM-Blocks :chains:
 
-LLM Blocks is a Python module that helps users interact with Language Learning Model (LLM) chains. It provides a simple and flexible way to create and manage LLM chains, ensuring efficient interactions with models such as OpenAI's GPT-3.5 Turbo.
+[![GitHub stars](https://img.shields.io/github/stars/voynow/llm-blocks.svg)](https://github.com/voynow/llm-blocks/stargazers)
+[![PyPI version](https://badge.fury.io/py/llm-blocks.svg)](https://pypi.org/project/llm-blocks/)
 
-## Installation
-First, make sure to have Python installed. Then, to install the required dependencies for this module, run the following commands:
+LLM-Blocks is a Python library that provides a simple interface for creating and managing Language Learning Model (LLM) chains. It leverages the power of OpenAI's GPT-3.5-turbo to generate chat-like completions.
+
+## :book: Table of Contents
+- [Why Use LLM-Blocks](#why-use-llm-blocks)
+- [Repo Structure](#repo-structure)
+- [Installation](#installation)
+- [Example Usage](#example-usage)
+
+## :rocket: Why Use LLM-Blocks
+
+LLM-Blocks stands out from the crowd by providing a super simple interface for creating and managing LLM chains. It's perfect for developers who want to leverage the power of GPT-3.5-turbo without getting into the complexities of managing the model. With LLM-Blocks, you can create GPT completions and stream or batch outputs with ease. 
+
+## :file_folder: Repo Structure
 
 ```
-pip install -r requirements.txt
-pip install -r requirements.dev.txt
+.
+├── .gitignore
+├── .env
+├── llm_blocks
+│   ├── chat_utils.py
+│   └── __init__.py
+├── requirements.txt
+├── setup.py
+└── turbo_docs.toml
 ```
 
-## Configuration
-To run the LLM Blocks, you'll need an OpenAI API key. Store your API key in a .env file or export it as an environment variable:
+## :wrench: Installation
 
-For a .env file:
-```
-OPENAI_API_KEY=your_openai_api_key
-```
+To install LLM-Blocks, run the following command:
 
-For environment variables:
-```
-export OPENAI_API_KEY=your_openai_api_key
+```bash
+pip install llm-blocks
 ```
 
-## Usage
-The `llm_blocks` folder contains the main ChatUtils class, which can be utilized to create and manage your LLM chains.
+## :computer: Example Usage
 
-Here's a simple example of using the `GenericChain` class:
+Here's a simple example of how to use the `GenericChain` class in LLM-Blocks:
 
 ```python
 from llm_blocks.chat_utils import GenericChain
 
-# Create a chain with a given template
-template = "The meaning of {word} is:"
-my_chain = GenericChain(template)
+# Initialize the GenericChain class
+chain = GenericChain(template="Hello, {name}!")
 
-# Call the chain with any input you desire
-response = my_chain("friendship")
+# Call the model with the given inputs
+response = chain(name="John Doe")
+
+# Print the response
 print(response)
 ```
 
-## Module Structure
-- `exclude.toml`: Configuration file to specify files or directories to exclude.
-- `requirements.dev.txt`: Development dependencies for this module.
-- `requirements.txt`: Main dependencies for this module.
-- `llm_blocks`
-  - `chat_utils.py`: Python file containing the definition of the `GenericChain` class and utility functions for working with LLM chains.
+In this example, the `GenericChain` class is initialized with a template. The model is then called with the given inputs, and the response is printed.
 
-## Logging Responses
-The `GenericChain` class keeps a log of all interactions with the given LLM. The log is stored as a list of dictionaries and can be accessed with `my_chain.logs`.
+## :heart: Support
 
-Example:
-```python
-for log in my_chain.logs:
-    print(f'Inputs: {log["inputs"]}')
-    print(f'Callback: {log["callback"]}')
-    print(f'Response: {log["response"]}')
-    print(f'Response Time: {log["response_time"]}')
-    print('---')
-```
-
-## Contributing
-Feel free to submit pull requests, report bugs, or suggest new features through the GitHub repository. We appreciate your contributions and feedback!
-
-## License
-This project is licensed under the MIT License.
+If you like this project, please give it a :star: on [GitHub](https://github.com/voynow/llm-blocks)!

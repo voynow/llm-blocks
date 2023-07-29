@@ -1,0 +1,12 @@
+# Files or directories to exclude
+
+ignore = [
+    "*.ipynb",
+    ".git",
+    "venv",
+    "build",
+    "dist",
+    "__pycache__",
+    ".env",
+    "llm_blocks.egg-info",
+]
