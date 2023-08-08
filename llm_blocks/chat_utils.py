@@ -1,10 +1,10 @@
 import os
 import re
 import time
+from typing import Any, Dict, Generator, Union
 
 import dotenv
 import openai
-from IPython.display import Markdown, clear_output, display
 
 dotenv.load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -12,6 +12,7 @@ if not OPENAI_API_KEY:
     raise ValueError(
         "OPENAI_API_KEY not found. Either create a .env file or set the environment variable."
     )
+openai.api_key = OPENAI_API_KEY
 
 
 class GenericChain:
@@ -45,7 +46,7 @@ class GenericChain:
         """Get the input variables from the template"""
         return re.findall(r"\{(\w+)\}", self.template)
 
-    def create_completion(self, inputs: dict) -> str:
+    def create_completion(self, inputs: Dict[str, Any]) -> Union[Dict[str, Any], Generator]:
         """Create a GPT completion"""
         self.message['content'] = self.template.format(**inputs)
         response = openai.ChatCompletion.create(
@@ -56,19 +57,7 @@ class GenericChain:
         )
         return response
 
-    def stream_output(self, inputs) -> None:
-        """Get stream GPT completion - fun to watch"""
-        response = self.create_completion(inputs)
-        collected_content = ""
-        for chunk in response:
-            chunk_message = chunk['choices'][0]['delta']  
-            collected_content += chunk_message['content'] if 'content' in chunk_message else ''
-            clear_output(wait=True)
-            display(Markdown(collected_content))
-        return collected_content
-
-    def batch_output(self, inputs) -> None:
-        """Get batch GPT completion - not as fun to watch"""
+    def batch_output(self, inputs: Dict[str, Any]) -> None:
         start_time = time.time()
         response = self.create_completion(inputs).choices[0]["message"]["content"]
         response_time = time.time() - start_time
@@ -79,7 +68,7 @@ class GenericChain:
         })
         return response
 
-    def __call__(self, *args, **kwargs) -> str:
+    def __call__(self, *args, **kwargs) -> Union[str, Generator]:
         """Call the model with the given inputs"""
         inputs = {}
         if args:
@@ -88,5 +77,5 @@ class GenericChain:
             inputs.update(kwargs)
 
         if self.stream:
-            return self.stream_output(inputs) 
+            return self.create_completion(inputs)
         return self.batch_output(inputs)
