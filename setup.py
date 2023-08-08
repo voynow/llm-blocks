@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 setup(
     name="llm-blocks",
-    version="0.2.5",
+    version="0.2.6",
     author="Jamie Voynow",
     author_email="voynow99@gmail.com",
     description="Simple interface for creating and managing LLM chains",
@@ -24,3 +24,6 @@ setup(
     ],
     python_requires='>=3.6',
 )
+
+# python setup.py sdist bdist_wheel
+# twine upload dist/*
