@@ -26,14 +26,14 @@ class Block(ABC):
         role: str = "user",
         model_name: str = "gpt-3.5-turbo-16k",
         temperature: float = 0.1,
-        verbose: bool = False
+        stream: bool = False
     ):
         self.template = template
         self.input_variables = self.get_input_variables()
         self.message = {"role": role, "content": None}
         self.model_name = model_name
         self.temperature = temperature
-        self.verbose = verbose
+        self.stream = stream
         self.logs = []
 
     def get_input_variables(self):
@@ -60,17 +60,17 @@ class Block(ABC):
             content_text = delta["content"] if "content" in delta else ""
             full_response_content += content_text
             
-            if self.verbose:
+            if self.stream:
                 print(content_text, end="", flush=True)
         
-        response_time = time.time() - start_time
-        log_entry = {
+        self.logs.append({
             "inputs": inputs,
             "response": full_response_content,
-            "response_time": response_time
-        }
-        self.logs.append(log_entry)
-        return full_response_content
+            "response_time": time.time() - start_time
+        })
+
+        if not self.stream:
+            return full_response_content
 
     def __call__(self, *args, **kwargs):
         inputs = {}
