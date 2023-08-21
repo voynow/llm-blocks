@@ -24,15 +24,6 @@ The repository has the following structure:
 ```
 .
 ├── .gitignore
-├── secrets_manager.py
-├── __pycache__
-├── venv
-├── repo_loader_data
-├── .env
-├── .vscode
-├── dist
-├── llm_blocks.egg-info
-├── build
 ├── llm_blocks
 │   ├── blocks.py
 │   └── __init__.py
