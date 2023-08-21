@@ -1,27 +1,38 @@
-# LLM-Blocks :building_construction:
+# LLM Blocks :building_construction:
 
-![GitHub stars](https://img.shields.io/github/stars/voynow/llm-blocks?style=social) ![PyPI](https://img.shields.io/pypi/v/llm-blocks)
+![GitHub stars](https://img.shields.io/github/stars/voynow/llm-blocks?style=social)
+![PyPI](https://img.shields.io/pypi/v/llm-blocks)
 
-LLM-Blocks is a Python library that provides a simple interface for creating and managing Language Learning Model (LLM) chains. It is designed to make it easy to interact with OpenAI's GPT-3.5-turbo model, allowing you to create completions and generate responses in a chat-like format.
+LLM Blocks is a Python package that provides a simple interface for creating and managing Language Model (LLM) chains. It leverages the power of OpenAI's GPT-3.5-turbo to generate AI completions based on user-defined templates.
 
 ## :book: Table of Contents
 
-- [Why Use LLM-Blocks](#why-use-llm-blocks)
+- [Why Use LLM Blocks](#why-use-llm-blocks)
 - [Repo Structure](#repo-structure)
 - [Installation](#installation)
 - [Usage](#usage)
 - [Contributing](#contributing)
-- [License](#license)
 
-## :question: Why Use LLM-Blocks
+## :question: Why Use LLM Blocks
 
-LLM-Blocks is designed to simplify the process of creating and managing LLM chains. It provides a high-level interface that abstracts away the complexities of interacting with the OpenAI API, allowing you to focus on creating engaging and interactive chat experiences. Whether you're building a chatbot, a virtual assistant, or any other application that requires conversational AI, LLM-Blocks can help you get there faster.
+LLM Blocks is designed to simplify the process of creating and managing LLM chains. It allows you to define a template and generate AI completions based on that template. This can be particularly useful for tasks such as generating text, answering questions, or creating conversational agents. With LLM Blocks, you can focus on defining your templates and let the package handle the rest.
 
-## :deciduous_tree: Repo Structure
+## :file_folder: Repo Structure
+
+The repository has the following structure:
 
 ```
 .
 ├── .gitignore
+├── secrets_manager.py
+├── __pycache__
+├── venv
+├── repo_loader_data
+├── .env
+├── .vscode
+├── dist
+├── llm_blocks.egg-info
+├── build
 ├── llm_blocks
 │   ├── blocks.py
 │   └── __init__.py
@@ -31,35 +42,37 @@ LLM-Blocks is designed to simplify the process of creating and managing LLM chai
 └── turbo_docs.toml
 ```
 
-## :gear: Installation
+## :wrench: Installation
 
-LLM-Blocks can be installed via pip:
+You can install LLM Blocks from PyPI:
 
 ```bash
 pip install llm-blocks
 ```
 
-## :rocket: Usage
+## :computer: Usage
 
-Here's an example of how to use the `StreamBlock` and `BatchBlock` classes in LLM-Blocks:
+Here's a basic example of how to use LLM Blocks:
 
 ```python
 from llm_blocks import blocks
 
-template = "Hello, {name}!"
+# Define a template
+template = "You're a sophisticated software development AI expert system, capable of assistance with the development of advanced software applications. Your job is to produce comprehensive software architecture designs for MVP software solutions.\\n", "{application_description}"
 
-# Create a StreamBlock
-block = blocks.StreamBlock(template=template)
-response_generator = block(name="World")
-block.display(response_generator)
+# Create a block
+block = blocks.Block(template=template, stream=True)
 
-# Create a BatchBlock
-# Example of how to use the non-defualt model
-block = blocks.BatchBlock(template=template, model_name="gpt-4")
-response = block(name="World")
-block.display(response)
+# Generate a completion
+block(application_description="AI assisted meal planning & grocery list given nutritional goals and dietary restrictions.")
 ```
+
+In this example, we define a template and use it to create a block. We then generate a completion by calling the block with the `application_description` argument.
 
 ## :handshake: Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit a pull request.
+
+## :email: Contact
+
+If you have any questions or feedback, please reach out to us at voynow99@gmail.com.
