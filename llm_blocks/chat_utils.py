@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import os
 import re
 import time
@@ -15,16 +16,7 @@ if not OPENAI_API_KEY:
 openai.api_key = OPENAI_API_KEY
 
 
-def stream_to_console(generator: Generator) -> None:
-    print('', end='', flush=True)
-
-    for message in generator:
-        delta = message['choices'][0]['delta']
-        content = delta['content'] if 'content' in delta else ""
-        print(content, end='', flush=True)
-
-
-class GenericChain:
+class Block(ABC):
     def __init__(
         self,
         template: str,
@@ -33,7 +25,7 @@ class GenericChain:
         temperature: float = 0.2,
         stream: bool = False,
     ):
-        """ 
+        """
         Super simple interface for chat-like GPT completions
 
         template (str): The template to use for the model
@@ -50,14 +42,23 @@ class GenericChain:
         self.stream = stream
         self.logs = []
 
-
-    def get_input_variables(self) -> list:
-        """Get the input variables from the template"""
+    def get_input_variables(self):
         return re.findall(r"\{(\w+)\}", self.template)
 
-    def create_completion(self, inputs: Dict[str, Any]) -> Union[Dict[str, Any], Generator]:
+    def log(self, request, response, response_time=None):
+        log_entry = {
+            "inputs": request,
+            "response": response,
+        }
+        if response_time:
+            log_entry["response_time"] = response_time
+        self.logs.append(log_entry)
+
+    def create_completion(
+        self, inputs: Dict[str, Any]
+    ) -> Union[Dict[str, Any], Generator]:
         """Create a GPT completion"""
-        self.message['content'] = self.template.format(**inputs)
+        self.message["content"] = self.template.format(**inputs)
         response = openai.ChatCompletion.create(
             model=self.model_name,
             messages=[self.message],
@@ -66,25 +67,51 @@ class GenericChain:
         )
         return response
 
-    def batch_output(self, inputs: Dict[str, Any]) -> None:
-        start_time = time.time()
-        response = self.create_completion(inputs).choices[0]["message"]["content"]
-        response_time = time.time() - start_time
-        self.logs.append({
-            "inputs": inputs,
-            "response": response,
-            "response_time": response_time,
-        })
-        return response
+    @abstractmethod
+    def execute(self, message: str) -> Union[str, Generator]:
+        pass
+
+    @abstractmethod
+    def display(self, content) -> None:
+        pass
 
     def __call__(self, *args, **kwargs) -> Union[str, Generator]:
-        """Call the model with the given inputs"""
         inputs = {}
         if args:
             inputs = {key: value for key, value in zip(self.input_variables, args)}
         if kwargs:
             inputs.update(kwargs)
+        return self.execute(inputs)
 
-        if self.stream:
-            return self.create_completion(inputs)
-        return self.batch_output(inputs)
+
+class StreamBlock(Block):
+    def execute(self, message):
+        inputs = self.get_input_variables()
+        response = self.create_completion(
+            {key: value for key, value in zip(inputs, message)}
+        )
+        self.log(message, response)
+        return response
+
+    def display(self, content):
+        print("", end="", flush=True)
+
+        for message in content:
+            delta = message["choices"][0]["delta"]
+            content = delta["content"] if "content" in delta else ""
+            print(content, end="", flush=True)
+
+
+class BatchBlock(Block):
+    def execute(self, message):
+        start_time = time.time()
+        inputs = self.get_input_variables()
+        response = self.create_completion(
+            {key: value for key, value in zip(inputs, message)}
+        ).choices[0]["message"]["content"]
+        response_time = time.time() - start_time
+        self.log(message, response, response_time)
+        return response
+
+    def display(self, content):
+        print(content)
