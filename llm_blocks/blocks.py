@@ -21,9 +21,8 @@ class Block(ABC):
         self,
         template: str,
         role: str = "user",
-        model_name: str = "gpt-3.5-turbo",
-        temperature: float = 0.2,
-        stream: bool = False,
+        model_name: str = "gpt-3.5-turbo-16k",
+        temperature: float = 0.1,
     ):
         """
         Super simple interface for chat-like GPT completions
@@ -39,7 +38,6 @@ class Block(ABC):
         self.message = {"role": role, "content": None}
         self.model_name = model_name
         self.temperature = temperature
-        self.stream = stream
         self.logs = []
 
     def get_input_variables(self):
@@ -68,7 +66,7 @@ class Block(ABC):
         return response
 
     @abstractmethod
-    def execute(self, message: str) -> Union[str, Generator]:
+    def execute(self, inputs: str) -> Union[str, Generator]:
         pass
 
     @abstractmethod
@@ -85,12 +83,13 @@ class Block(ABC):
 
 
 class StreamBlock(Block):
-    def execute(self, message):
-        inputs = self.get_input_variables()
-        response = self.create_completion(
-            {key: value for key, value in zip(inputs, message)}
-        )
-        self.log(message, response)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stream = True
+    
+    def execute(self, inputs):
+        response = self.create_completion(inputs)
+        self.log(inputs, response)
         return response
 
     def display(self, content):
@@ -103,14 +102,15 @@ class StreamBlock(Block):
 
 
 class BatchBlock(Block):
-    def execute(self, message):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.stream = False
+
+    def execute(self, inputs):
         start_time = time.time()
-        inputs = self.get_input_variables()
-        response = self.create_completion(
-            {key: value for key, value in zip(inputs, message)}
-        ).choices[0]["message"]["content"]
+        response = self.create_completion(inputs)
         response_time = time.time() - start_time
-        self.log(message, response, response_time)
+        self.log(inputs, response, response_time)
         return response
 
     def display(self, content):

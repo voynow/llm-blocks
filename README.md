@@ -1,61 +1,65 @@
-# LLM-Blocks :chains:
+# LLM-Blocks :building_construction:
 
-[![GitHub stars](https://img.shields.io/github/stars/voynow/llm-blocks.svg)](https://github.com/voynow/llm-blocks/stargazers)
-[![PyPI version](https://badge.fury.io/py/llm-blocks.svg)](https://pypi.org/project/llm-blocks/)
+![GitHub stars](https://img.shields.io/github/stars/voynow/llm-blocks?style=social) ![PyPI](https://img.shields.io/pypi/v/llm-blocks)
 
-LLM-Blocks is a Python library that provides a simple interface for creating and managing Language Learning Model (LLM) chains. It leverages the power of OpenAI's GPT-3.5-turbo to generate chat-like completions.
+LLM-Blocks is a Python library that provides a simple interface for creating and managing Language Learning Model (LLM) chains. It is designed to make it easy to interact with OpenAI's GPT-3.5-turbo model, allowing you to create completions and generate responses in a chat-like format.
 
 ## :book: Table of Contents
+
 - [Why Use LLM-Blocks](#why-use-llm-blocks)
 - [Repo Structure](#repo-structure)
 - [Installation](#installation)
-- [Example Usage](#example-usage)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
 
-## :rocket: Why Use LLM-Blocks
+## :question: Why Use LLM-Blocks
 
-LLM-Blocks stands out from the crowd by providing a super simple interface for creating and managing LLM chains. It's perfect for developers who want to leverage the power of GPT-3.5-turbo without getting into the complexities of managing the model. With LLM-Blocks, you can create GPT completions and stream or batch outputs with ease. 
+LLM-Blocks is designed to simplify the process of creating and managing LLM chains. It provides a high-level interface that abstracts away the complexities of interacting with the OpenAI API, allowing you to focus on creating engaging and interactive chat experiences. Whether you're building a chatbot, a virtual assistant, or any other application that requires conversational AI, LLM-Blocks can help you get there faster.
 
-## :file_folder: Repo Structure
+## :deciduous_tree: Repo Structure
 
 ```
 .
 ├── .gitignore
-├── .env
 ├── llm_blocks
-│   ├── chat_utils.py
+│   ├── blocks.py
 │   └── __init__.py
 ├── requirements.txt
 ├── setup.py
+├── test.ipynb
 └── turbo_docs.toml
 ```
 
-## :wrench: Installation
+## :gear: Installation
 
-To install LLM-Blocks, run the following command:
+LLM-Blocks can be installed via pip:
 
 ```bash
 pip install llm-blocks
 ```
 
-## :computer: Example Usage
+## :rocket: Usage
 
-Here's a simple example of how to use the `GenericChain` class in LLM-Blocks:
+Here's an example of how to use the `StreamBlock` and `BatchBlock` classes in LLM-Blocks:
 
 ```python
-from llm_blocks.chat_utils import GenericChain
+from llm_blocks import blocks
 
-# Initialize the GenericChain class
-chain = GenericChain(template="Hello, {name}!")
+template = "Hello, {name}!"
 
-# Call the model with the given inputs
-response = chain(name="John Doe")
+# Create a StreamBlock
+block = blocks.StreamBlock(template=template)
+response_generator = block(name="World")
+block.display(response_generator)
 
-# Print the response
-print(response)
+# Create a BatchBlock
+# Example of how to use the non-defualt model
+block = blocks.BatchBlock(template=template, model_name="gpt-4")
+response = block(name="World")
+block.display(response)
 ```
 
-In this example, the `GenericChain` class is initialized with a template. The model is then called with the given inputs, and the response is printed.
+## :handshake: Contributing
 
-## :heart: Support
-
-If you like this project, please give it a :star: on [GitHub](https://github.com/voynow/llm-blocks)!
+Contributions are welcome! Please feel free to submit a Pull Request.

@@ -1,7 +1,7 @@
 # Files or directories to exclude
 
 ignore = [
-    "*.ipynb",
+    # "*.ipynb",
     ".git",
     "venv",
     "build",
