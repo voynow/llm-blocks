@@ -15,6 +15,15 @@ if not OPENAI_API_KEY:
 openai.api_key = OPENAI_API_KEY
 
 
+def stream_to_console(generator: Generator) -> None:
+    print('', end='', flush=True)
+
+    for message in generator:
+        delta = message['choices'][0]['delta']
+        content = delta['content'] if 'content' in delta else ""
+        print(content, end='', flush=True)
+
+
 class GenericChain:
     def __init__(
         self,
