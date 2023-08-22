@@ -107,26 +107,31 @@ class TemplateBlock(Block):
 
 
 class ChatBlock:
-    def __init__(self, template: str, model_name: str = "gpt-3.5-turbo-16k", temperature: float = 0.1, stream: bool = False, initial: bool = True):
-        self.template_block = TemplateBlock(template, model_name, temperature, stream)
-        self.block = Block(model_name, temperature, stream)
-        self.initial = initial
+    def __init__(self, template: str, *args, **kwargs):
+        self.template_block = TemplateBlock(template, *args, **kwargs)
+        self.block = Block(*args, **kwargs)
+        self.initial = True
         self.conversation_history = ""
 
     def start_conversation(self, inputs: Dict[str, Any]) -> Optional[str]:
-        response = self.template_block.execute(inputs)
+        response = self.template_block(inputs)
         self.conversation_history += f"User:\n{inputs}\nYou:\n{response}"
         self.initial = False
         return response
 
     def continue_conversation(self, message: str) -> Optional[str]:
         full_message = self.conversation_history + "\nUser: " + message
-        response = self.block.execute(full_message)
+        response = self.block(full_message)
         self.conversation_history += f"\nUser:\n{message}\nYou:\n{response}"
         return response
 
-    def __call__(self, content: str, initial: bool = False) -> Optional[str]:
+    def __call__(self, content: str, initial: bool = None) -> Optional[str]:
+        initial = initial if initial is not None else self.initial
         if initial:
             return self.start_conversation(content)
         else:
             return self.continue_conversation(content)
+
+    @property
+    def logs(self):
+        return self.template_block.logs + self.block.logs
