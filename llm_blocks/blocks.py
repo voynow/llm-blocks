@@ -16,45 +16,20 @@ openai.api_key = OPENAI_API_KEY
 
 
 class Block:
-    """
-    A class representing a reusable block of code for invoking GPT models via the OpenAI API.
-
-    This class defines a template for creating chat completions and provides methods for invoking
-    a GPT model with specified parameters. It supports both streaming and non-streaming modes,
-    and it logs the details of each execution, including response time.
-
-    :param template: A string containing variables hat will be replaced with actual values
-    :param model_name: The name of the GPT model to be used
-    :param temperature: The temperature for the completion, controlling randomness
-    :param stream: Whether to stream the content directly to the console
-    """
     def __init__(
         self,
-        template: str,
         model_name: str = "gpt-3.5-turbo-16k",
         temperature: float = 0.1,
         stream: bool = False,
     ):
-        self.template = template
         self.model_name = model_name
         self.temperature = temperature
         self.stream = stream
-        self.input_variables: List[str] = self.get_input_variables()
         self.message: Dict[str, Union[str, None]] = {"role": "user", "content": None}
         self.logs: List[Dict[str, Union[Dict[str, Any], str, float]]] = []
 
-    def get_input_variables(self) -> List[str]:
-        """Extracts input variables from template string"""
-        return re.findall(r"\{(\w+)\}", self.template)
-
-    def create_completion(self, template_vars: Dict[str, Any]) -> openai.ChatCompletion:
-        """
-        GPT model invocation via OpenAI API chat completion endpoint
-
-        :param template_vars: Input variables to be substituted into the template
-        :return: Rsponse generator
-        """
-        self.message["content"] = self.template.format(**template_vars)
+    def create_completion(self, content: str) -> openai.ChatCompletion:
+        self.message["content"] = content
         return openai.ChatCompletion.create(
             model=self.model_name,
             messages=[self.message],
@@ -62,7 +37,7 @@ class Block:
             stream=True,
         )
 
-    def execute(self, inputs: Dict[str, Any]) -> Optional[str]:
+    def execute(self, inputs: str) -> Optional[str]:
         """
         Executes a GPT completion based on the given inputs and template.
 
@@ -95,6 +70,29 @@ class Block:
         if not self.stream:
             return full_response_content
 
+    def __call__(self, content: str) -> Optional[str]:
+        return self.execute(content)
+
+
+class TemplateBlock(Block):
+    def __init__(
+        self,
+        template: str,
+        model_name: str = "gpt-3.5-turbo-16k",
+        temperature: float = 0.1,
+        stream: bool = False,
+    ):
+        super().__init__(model_name, temperature, stream)
+        self.template = template
+        self.input_variables: List[str] = self.get_input_variables()
+
+    def get_input_variables(self) -> List[str]:
+        return re.findall(r"\{(\w+)\}", self.template)
+
+    def execute(self, inputs: Dict[str, Any]) -> Optional[str]:
+        content = self.template.format(**inputs)
+        return super().execute(content)
+
     def __call__(self, *args: Any, **kwargs: Any) -> Optional[str]:
         """
         Allows the block to be called as a function, passing in the input variables
@@ -106,3 +104,29 @@ class Block:
         if kwargs:
             inputs.update(kwargs)
         return self.execute(inputs)
+
+
+class ChatBlock:
+    def __init__(self, template: str, model_name: str = "gpt-3.5-turbo-16k", temperature: float = 0.1, stream: bool = False, initial: bool = True):
+        self.template_block = TemplateBlock(template, model_name, temperature, stream)
+        self.block = Block(model_name, temperature, stream)
+        self.initial = initial
+        self.conversation_history = ""
+
+    def start_conversation(self, inputs: Dict[str, Any]) -> Optional[str]:
+        response = self.template_block.execute(inputs)
+        self.conversation_history += f"User:\n{inputs}\nYou:\n{response}"
+        self.initial = False
+        return response
+
+    def continue_conversation(self, message: str) -> Optional[str]:
+        full_message = self.conversation_history + "\nUser: " + message
+        response = self.block.execute(full_message)
+        self.conversation_history += f"\nUser:\n{message}\nYou:\n{response}"
+        return response
+
+    def __call__(self, content: str, initial: bool = False) -> Optional[str]:
+        if initial:
+            return self.start_conversation(content)
+        else:
+            return self.continue_conversation(content)
