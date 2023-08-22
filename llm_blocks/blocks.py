@@ -67,8 +67,7 @@ class Block:
                 "response_time": time.time() - start_time,
             }
         )
-        if not self.stream:
-            return full_response_content
+        return full_response_content
 
     def __call__(self, content: str) -> Optional[str]:
         return self.execute(content)
