@@ -1,7 +1,5 @@
-secrets_manager.py
 __pycache__
 venv
-repo_loader_data
 .env
 .vscode
 dist
