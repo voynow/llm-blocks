@@ -115,14 +115,14 @@ class ChatBlock:
 
     def start_conversation(self, inputs: Dict[str, Any]) -> Optional[str]:
         response = self.template_block(inputs)
-        self.conversation_history += f"User:\n{inputs}\nYou:\n{response}"
+        self.conversation_history += f"(User)\n{inputs}\n(AI)\n{response}"
         self.initial = False
         return response
 
     def continue_conversation(self, message: str) -> Optional[str]:
-        full_message = self.conversation_history + "\nUser: " + message
-        response = self.block(full_message)
-        self.conversation_history += f"\nUser:\n{message}\nYou:\n{response}"
+        self.conversation_history += f"\n(User)\n{message}\n(AI)\n"
+        response = self.block(self.conversation_history)
+        self.conversation_history += response
         return response
 
     def __call__(self, content: str, initial: bool = None) -> Optional[str]:
