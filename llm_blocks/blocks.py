@@ -129,3 +129,26 @@ class ChatBlock(Block):
         response = self.execute(message)
         self.message_handler.add_message("assistant", response)
         return response
+
+
+def create_block(
+    template: Optional[str] = None,
+    model_name: str = "gpt-3.5-turbo-16k",
+    temperature: float = 0.1,
+    stream: bool = False,
+    system_message: Optional[str] = None,
+    
+):
+    """Factory function for creating a block"""
+    config = OpenAIConfig(
+        model_name=model_name,
+        temperature=temperature,
+        stream=stream,
+    )
+    logger = ExecutionLogger()
+    message_handler = MessageHandler(system_message=system_message)
+
+    if template:
+        return TemplateBlock(template, config=config, logger=logger, message_handler=message_handler)
+    else:
+        return Block(config=config, logger=logger, message_handler=message_handler)
