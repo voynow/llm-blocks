@@ -14,59 +14,31 @@ if not OPENAI_API_KEY:
     )
 openai.api_key = OPENAI_API_KEY
 
-
 class Block:
-    """
-    A class representing a reusable block of code for invoking GPT models via the OpenAI API.
-
-    :param model_name: The name of the GPT model to be used
-    :param temperature: The temperature for the completion, controlling randomness
-    :param stream: Whether to stream the content directly to the console
-    """
-
-    def __init__(
-        self,
-        model_name: str = "gpt-3.5-turbo-16k",
-        temperature: float = 0.1,
-        stream: bool = False,
-        system_message: Optional[str] = None,
-    ):
+    def __init__(self, model_name: str = "gpt-3.5-turbo-16k", temperature: float = 0.1, stream: bool = False, system_message: Optional[str] = None):
         self.model_name = model_name
         self.temperature = temperature
         self.stream = stream
-        self.system_message = system_message
-        self.logs: List[Dict[str, Union[Dict[str, Any], str, float]]] = []
+        self.logs = []
+        self.messages = []
+        if system_message:
+            self.add_message("system", system_message)
 
-    def create_completion(self, content: str) -> openai.ChatCompletion:
-        """
-        Creates a GPT completion based on the given content.
+    def add_message(self, role: str, content: str):
+        self.messages.append({"role": role, "content": content})
 
-        :param content: The content to be completed
-        :return: The response content
-        """
-        messages = [{"role": "user", "content": content}]
-        if self.system_message:
-            messages.insert(0, {"role": "system", "content": self.system_message})
+    def create_completion(self) -> openai.ChatCompletion:
         return openai.ChatCompletion.create(
             model=self.model_name,
-            messages=messages,
+            messages=self.messages,
             temperature=self.temperature,
             stream=True,
         )
 
-    def execute(self, inputs: str) -> Optional[str]:
-        """
-        Executes a GPT completion based on the given inputs and template.
-
-        If the `stream` attribute is True, the content is printed to the console,
-        and the method returns None. If `stream` is False, the content is returned
-        as a string without printing to the console.
-
-        :param inputs: Input variables to be substituted into the template
-        :return: The response content if `stream` is False, otherwise None
-        """
+    def execute(self, content: str) -> Optional[str]:
         start_time = time.time()
-        response_generator = self.create_completion(inputs)
+        self.add_message("user", content)
+        response_generator = self.create_completion()
         full_response_content = ""
 
         for message in response_generator:
@@ -79,7 +51,7 @@ class Block:
 
         self.logs.append(
             {
-                "inputs": inputs,
+                "inputs": content,
                 "response": full_response_content,
                 "response_time": time.time() - start_time,
             }
@@ -91,40 +63,16 @@ class Block:
 
 
 class TemplateBlock(Block):
-    """
-    Extends the Block class to allow for templating of the input content.
-
-    :param template: The template to be completed
-    :param model_name: The name of the GPT model to be used
-    :param temperature: The temperature for the completion, controlling randomness
-    :param stream: Whether to stream the content directly to the console
-    """
-
-    def __init__(
-        self, template: str, *args, system_message: Optional[str] = None, **kwargs
-    ):
+    def __init__(self, template: str, *args, system_message: Optional[str] = None, **kwargs):
         super().__init__(*args, system_message=system_message, **kwargs)
         self.template = template
-        self.input_variables: List[str] = self.get_input_variables()
-
-    def get_input_variables(self) -> List[str]:
-        return re.findall(r"\{(\w+)\}", self.template)
+        self.input_variables = re.findall(r"\{(\w+)\}", self.template)
 
     def execute(self, inputs: Dict[str, Any]) -> Optional[str]:
-        """
-        Executes a GPT completion based on the given inputs and template.
-
-        :param inputs: Input variables to be substituted into the template
-        :return: The response content if `stream` is False, otherwise None
-        """
         content = self.template.format(**inputs)
         return super().execute(content)
 
     def __call__(self, *args: Any, **kwargs: Any) -> Optional[str]:
-        """
-        Allows the block to be called as a function, passing in the input variables
-        as arguments or keyword arguments.
-        """
         inputs = {}
         if args:
             inputs = {key: value for key, value in zip(self.input_variables, args)}
@@ -133,24 +81,8 @@ class TemplateBlock(Block):
         return self.execute(inputs)
 
 
-class ChatBlock:
-    """Implements a chat style implimentation of the Block class"""
-
-    def __init__(
-        self, *args, system_message: Optional[str] = None, **kwargs
-    ):
-        self.block = Block(*args, system_message=system_message, **kwargs)
-        self.initial = True
-        self.conversation_history = ""
-
-
+class ChatBlock(Block):
     def __call__(self, message: str) -> Optional[str]:
-        """Allows the block to be called as a function"""
-        self.conversation_history += f"\n(User)\n{message}\n(AI)\n"
-        response = self.block(self.conversation_history)
-        self.conversation_history += response
+        response = self.execute(message)
+        self.add_message("assistant", response)
         return response
-
-    @property
-    def logs(self):
-        return self.template_block.logs + self.block.logs
