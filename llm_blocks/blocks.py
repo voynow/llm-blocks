@@ -1,7 +1,7 @@
 import os
 import re
 import time
-from typing import Any, Dict, List, Union, Optional
+from typing import Any, Dict, List, Optional, TypedDict, Union
 
 import dotenv
 import openai
@@ -15,35 +15,61 @@ if not OPENAI_API_KEY:
 openai.api_key = OPENAI_API_KEY
 
 
-class Block:
-    def __init__(
-        self,
-        model_name: str = "gpt-3.5-turbo-16k",
-        temperature: float = 0.1,
-        stream: bool = False,
-        system_message: Optional[str] = None,
-    ):
-        self.model_name = model_name
-        self.temperature = temperature
-        self.stream = stream
-        self.system_message = system_message
+class OpenAIConfig(TypedDict):
+    model_name: str
+    temperature: float
+    stream: bool
+
+
+class ExecutionLogger:
+    def __init__(self):
         self.logs = []
-        self.initialize_messages()
+
+    def log(self, content, response, response_time):
+        self.logs.append(
+            {
+                "inputs": content,
+                "response": response,
+                "response_time": response_time,
+            }
+        )
+
+
+class MessageHandler:
+    def __init__(self, system_message: Optional[str] = None):
+        self.initialize_messages(system_message)
 
     def add_message(self, role: str, content: str):
         self.messages.append({"role": role, "content": content})
 
+    def initialize_messages(self, system_message: Optional[str]):
+        self.messages = []
+        if system_message:
+            self.add_message("system", system_message)
+
+
+class Block:
+    def __init__(
+        self,
+        config: OpenAIConfig,
+        logger: ExecutionLogger,
+        message_handler: MessageHandler,
+    ):
+        self.config = config
+        self.logger = logger
+        self.message_handler = message_handler
+
     def create_completion(self) -> openai.ChatCompletion:
         return openai.ChatCompletion.create(
-            model=self.model_name,
-            messages=self.messages,
-            temperature=self.temperature,
-            stream=True,
+            model=self.config["model_name"],
+            messages=self.message_handler.messages,
+            temperature=self.config["temperature"],
+            stream=self.config["stream"],
         )
 
     def handle_execution(self, content: str) -> str:
         start_time = time.time()
-        self.add_message("user", content)
+        self.message_handler.add_message("user", content)
         response_generator = self.create_completion()
         full_response_content = ""
 
@@ -52,26 +78,16 @@ class Block:
             content_text = delta["content"] if "content" in delta else ""
             full_response_content += content_text
 
-            if self.stream:
+            if self.config["stream"]:
                 print(content_text, end="", flush=True)
 
-        self.logs.append(
-            {
-                "inputs": content,
-                "response": full_response_content,
-                "response_time": time.time() - start_time,
-            }
-        )
+        response_time = time.time() - start_time
+        self.logger.log(content, full_response_content, response_time)
         return full_response_content
 
     def execute(self, content: str) -> Optional[str]:
         self.initialize_messages()
         return self.handle_execution(content)
-
-    def initialize_messages(self):
-        self.messages = []
-        if self.system_message:
-            self.add_message("system", self.system_message)
 
     def __call__(self, content: str) -> Optional[str]:
         return self.execute(content)
@@ -79,9 +95,13 @@ class Block:
 
 class TemplateBlock(Block):
     def __init__(
-        self, template: str, *args, system_message: Optional[str] = None, **kwargs
+        self,
+        template: str,
+        config: OpenAIConfig,
+        logger: ExecutionLogger,
+        message_handler: MessageHandler,
     ):
-        super().__init__(*args, system_message=system_message, **kwargs)
+        super().__init__(config=config, logger=logger, message_handler=message_handler)
         self.template = template
         self.input_variables = re.findall(r"\{(\w+)\}", self.template)
 
@@ -107,5 +127,5 @@ class ChatBlock(Block):
 
     def __call__(self, message: str) -> Optional[str]:
         response = self.execute(message)
-        self.add_message("assistant", response)
+        self.message_handler.add_message("assistant", response)
         return response
