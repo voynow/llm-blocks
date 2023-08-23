@@ -134,63 +134,22 @@ class TemplateBlock(Block):
 
 
 class ChatBlock:
-    """
-    Implements a chat style conversation using the TemplateBlock and Block classes
-
-    :param template: The template to be completed
-    :param model_name: The name of the GPT model to be used
-    :param temperature: The temperature for the completion, controlling randomness
-    :param stream: Whether to stream the content directly to the console
-    """
+    """Implements a chat style implimentation of the Block class"""
 
     def __init__(
-        self, template: str, *args, system_message: Optional[str] = None, **kwargs
+        self, *args, system_message: Optional[str] = None, **kwargs
     ):
-        self.template_block = TemplateBlock(
-            template, *args, system_message=system_message, **kwargs
-        )
         self.block = Block(*args, system_message=system_message, **kwargs)
         self.initial = True
         self.conversation_history = ""
 
-    def start_conversation(self, inputs: Dict[str, Any]) -> Optional[str]:
-        """
-        Starts a new conversation using the given inputs with the predefined template.
 
-        :param inputs: A dictionary containing key-value pairs for the initial conversation input
-        :return: The response content if `stream` is False, otherwise None
-        """
-        response = self.template_block(inputs)
-        self.conversation_history += f"(User)\n{inputs}\n(AI)\n{response}"
-        self.initial = False
-        return response
-
-    def continue_conversation(self, message: str) -> Optional[str]:
-        """
-        Continues an existing conversation with the given message.
-
-        :param message: The user's message to continue the conversation
-        :return: The response content if `stream` is False, otherwise None
-        """
+    def __call__(self, message: str) -> Optional[str]:
+        """Allows the block to be called as a function"""
         self.conversation_history += f"\n(User)\n{message}\n(AI)\n"
         response = self.block(self.conversation_history)
         self.conversation_history += response
         return response
-
-    def __call__(self, content: str, initial: bool = None) -> Optional[str]:
-        """
-        Allows the block to be called as a function, passing in the input variables
-        as arguments or keyword arguments.
-
-        :param content: The user's message to continue the conversation
-        :param initial: Whether to start a new conversation
-        :return: The response content if `stream` is False, otherwise None
-        """
-        initial = initial if initial is not None else self.initial
-        if initial:
-            return self.start_conversation(content)
-        else:
-            return self.continue_conversation(content)
 
     @property
     def logs(self):
