@@ -14,8 +14,15 @@ if not OPENAI_API_KEY:
     )
 openai.api_key = OPENAI_API_KEY
 
+
 class Block:
-    def __init__(self, model_name: str = "gpt-3.5-turbo-16k", temperature: float = 0.1, stream: bool = False, system_message: Optional[str] = None):
+    def __init__(
+        self,
+        model_name: str = "gpt-3.5-turbo-16k",
+        temperature: float = 0.1,
+        stream: bool = False,
+        system_message: Optional[str] = None,
+    ):
         self.model_name = model_name
         self.temperature = temperature
         self.stream = stream
@@ -33,7 +40,7 @@ class Block:
             temperature=self.temperature,
             stream=True,
         )
-    
+
     def handle_execution(self, content: str) -> str:
         start_time = time.time()
         self.add_message("user", content)
@@ -57,11 +64,10 @@ class Block:
         )
         return full_response_content
 
-
     def execute(self, content: str) -> Optional[str]:
         self.initialize_messages()
         return self.handle_execution(content)
-    
+
     def initialize_messages(self):
         self.messages = []
         if self.system_message:
@@ -72,7 +78,9 @@ class Block:
 
 
 class TemplateBlock(Block):
-    def __init__(self, template: str, *args, system_message: Optional[str] = None, **kwargs):
+    def __init__(
+        self, template: str, *args, system_message: Optional[str] = None, **kwargs
+    ):
         super().__init__(*args, system_message=system_message, **kwargs)
         self.template = template
         self.input_variables = re.findall(r"\{(\w+)\}", self.template)
@@ -94,7 +102,6 @@ class TemplateBlock(Block):
 
 
 class ChatBlock(Block):
-
     def execute(self, content: str) -> Optional[str]:
         return self.handle_execution(content)
 
