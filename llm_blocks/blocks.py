@@ -16,23 +16,40 @@ openai.api_key = OPENAI_API_KEY
 
 
 class Block:
+    """
+    A class representing a reusable block of code for invoking GPT models via the OpenAI API.
+
+    :param model_name: The name of the GPT model to be used
+    :param temperature: The temperature for the completion, controlling randomness
+    :param stream: Whether to stream the content directly to the console
+    """
+
     def __init__(
         self,
         model_name: str = "gpt-3.5-turbo-16k",
         temperature: float = 0.1,
         stream: bool = False,
+        system_message: Optional[str] = None,
     ):
         self.model_name = model_name
         self.temperature = temperature
         self.stream = stream
-        self.message: Dict[str, Union[str, None]] = {"role": "user", "content": None}
+        self.system_message = system_message
         self.logs: List[Dict[str, Union[Dict[str, Any], str, float]]] = []
 
     def create_completion(self, content: str) -> openai.ChatCompletion:
-        self.message["content"] = content
+        """
+        Creates a GPT completion based on the given content.
+
+        :param content: The content to be completed
+        :return: The response content
+        """
+        messages = [{"role": "user", "content": content}]
+        if self.system_message:
+            messages.insert(0, {"role": "system", "content": self.system_message})
         return openai.ChatCompletion.create(
             model=self.model_name,
-            messages=[self.message],
+            messages=messages,
             temperature=self.temperature,
             stream=True,
         )
@@ -74,14 +91,19 @@ class Block:
 
 
 class TemplateBlock(Block):
+    """
+    Extends the Block class to allow for templating of the input content.
+
+    :param template: The template to be completed
+    :param model_name: The name of the GPT model to be used
+    :param temperature: The temperature for the completion, controlling randomness
+    :param stream: Whether to stream the content directly to the console
+    """
+
     def __init__(
-        self,
-        template: str,
-        model_name: str = "gpt-3.5-turbo-16k",
-        temperature: float = 0.1,
-        stream: bool = False,
+        self, template: str, *args, system_message: Optional[str] = None, **kwargs
     ):
-        super().__init__(model_name, temperature, stream)
+        super().__init__(*args, system_message=system_message, **kwargs)
         self.template = template
         self.input_variables: List[str] = self.get_input_variables()
 
@@ -89,6 +111,12 @@ class TemplateBlock(Block):
         return re.findall(r"\{(\w+)\}", self.template)
 
     def execute(self, inputs: Dict[str, Any]) -> Optional[str]:
+        """
+        Executes a GPT completion based on the given inputs and template.
+
+        :param inputs: Input variables to be substituted into the template
+        :return: The response content if `stream` is False, otherwise None
+        """
         content = self.template.format(**inputs)
         return super().execute(content)
 
@@ -106,25 +134,58 @@ class TemplateBlock(Block):
 
 
 class ChatBlock:
-    def __init__(self, template: str, *args, **kwargs):
-        self.template_block = TemplateBlock(template, *args, **kwargs)
-        self.block = Block(*args, **kwargs)
+    """
+    Implements a chat style conversation using the TemplateBlock and Block classes
+
+    :param template: The template to be completed
+    :param model_name: The name of the GPT model to be used
+    :param temperature: The temperature for the completion, controlling randomness
+    :param stream: Whether to stream the content directly to the console
+    """
+
+    def __init__(
+        self, template: str, *args, system_message: Optional[str] = None, **kwargs
+    ):
+        self.template_block = TemplateBlock(
+            template, *args, system_message=system_message, **kwargs
+        )
+        self.block = Block(*args, system_message=system_message, **kwargs)
         self.initial = True
         self.conversation_history = ""
 
     def start_conversation(self, inputs: Dict[str, Any]) -> Optional[str]:
+        """
+        Starts a new conversation using the given inputs with the predefined template.
+
+        :param inputs: A dictionary containing key-value pairs for the initial conversation input
+        :return: The response content if `stream` is False, otherwise None
+        """
         response = self.template_block(inputs)
         self.conversation_history += f"(User)\n{inputs}\n(AI)\n{response}"
         self.initial = False
         return response
 
     def continue_conversation(self, message: str) -> Optional[str]:
+        """
+        Continues an existing conversation with the given message.
+
+        :param message: The user's message to continue the conversation
+        :return: The response content if `stream` is False, otherwise None
+        """
         self.conversation_history += f"\n(User)\n{message}\n(AI)\n"
         response = self.block(self.conversation_history)
         self.conversation_history += response
         return response
 
     def __call__(self, content: str, initial: bool = None) -> Optional[str]:
+        """
+        Allows the block to be called as a function, passing in the input variables
+        as arguments or keyword arguments.
+
+        :param content: The user's message to continue the conversation
+        :param initial: Whether to start a new conversation
+        :return: The response content if `stream` is False, otherwise None
+        """
         initial = initial if initial is not None else self.initial
         if initial:
             return self.start_conversation(content)
