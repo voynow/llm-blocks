@@ -19,10 +19,9 @@ class Block:
         self.model_name = model_name
         self.temperature = temperature
         self.stream = stream
+        self.system_message = system_message
         self.logs = []
-        self.messages = []
-        if system_message:
-            self.add_message("system", system_message)
+        self.initialize_messages()
 
     def add_message(self, role: str, content: str):
         self.messages.append({"role": role, "content": content})
@@ -34,8 +33,8 @@ class Block:
             temperature=self.temperature,
             stream=True,
         )
-
-    def execute(self, content: str) -> Optional[str]:
+    
+    def handle_execution(self, content: str) -> str:
         start_time = time.time()
         self.add_message("user", content)
         response_generator = self.create_completion()
@@ -58,6 +57,16 @@ class Block:
         )
         return full_response_content
 
+
+    def execute(self, content: str) -> Optional[str]:
+        self.initialize_messages()
+        return self.handle_execution(content)
+    
+    def initialize_messages(self):
+        self.messages = []
+        if self.system_message:
+            self.add_message("system", self.system_message)
+
     def __call__(self, content: str) -> Optional[str]:
         return self.execute(content)
 
@@ -68,8 +77,11 @@ class TemplateBlock(Block):
         self.template = template
         self.input_variables = re.findall(r"\{(\w+)\}", self.template)
 
+    def format_template(self, inputs: Dict[str, Any]) -> str:
+        return self.template.format(**inputs)
+
     def execute(self, inputs: Dict[str, Any]) -> Optional[str]:
-        content = self.template.format(**inputs)
+        content = self.format_template(inputs)
         return super().execute(content)
 
     def __call__(self, *args: Any, **kwargs: Any) -> Optional[str]:
@@ -82,6 +94,10 @@ class TemplateBlock(Block):
 
 
 class ChatBlock(Block):
+
+    def execute(self, content: str) -> Optional[str]:
+        return self.handle_execution(content)
+
     def __call__(self, message: str) -> Optional[str]:
         response = self.execute(message)
         self.add_message("assistant", response)
