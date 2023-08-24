@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import os
 import re
 import time
@@ -10,11 +11,11 @@ dotenv.load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
-
-class OpenAIConfig(TypedDict):
-    model_name: str
-    temperature: float
-    stream: bool
+@dataclass
+class OpenAIConfig:
+    model_name: str = "gpt-3.5-turbo-16k"
+    temperature: float = 0.1
+    stream: bool = False
 
 
 class MessageHandler:
@@ -43,9 +44,9 @@ class Block:
 
     def create_completion(self) -> openai.ChatCompletion:
         return openai.ChatCompletion.create(
-            model=self.config["model_name"],
+            model=self.config.model_name,
             messages=self.message_handler.messages,
-            temperature=self.config["temperature"],
+            temperature=self.config.temperature,
             stream=True,
         )
 
@@ -60,7 +61,7 @@ class Block:
             content_text = delta["content"] if "content" in delta else ""
             full_response_content += content_text
 
-            if self.config["stream"]:
+            if self.config.stream:
                 print(content_text, end="", flush=True)
 
         response_time = time.time() - start_time
