@@ -21,20 +21,6 @@ class OpenAIConfig(TypedDict):
     stream: bool
 
 
-class ExecutionLogger:
-    def __init__(self):
-        self.logs = []
-
-    def log(self, content, response, response_time):
-        self.logs.append(
-            {
-                "inputs": content,
-                "response": response,
-                "response_time": response_time,
-            }
-        )
-
-
 class MessageHandler:
     def __init__(self, system_message: Optional[str] = None):
         self.system_message = system_message
@@ -53,12 +39,11 @@ class Block:
     def __init__(
         self,
         config: OpenAIConfig,
-        logger: ExecutionLogger,
         message_handler: MessageHandler,
     ):
         self.config = config
-        self.logger = logger
         self.message_handler = message_handler
+        self.logs = []
 
     def create_completion(self) -> openai.ChatCompletion:
         return openai.ChatCompletion.create(
@@ -83,12 +68,21 @@ class Block:
                 print(content_text, end="", flush=True)
 
         response_time = time.time() - start_time
-        self.logger.log(content, full_response_content, response_time)
+        self.log(content, full_response_content, response_time)
         return full_response_content
 
     def execute(self, content: str) -> Optional[str]:
         self.message_handler.initialize_messages()
         return self.handle_execution(content)
+
+    def log(self, content, response, response_time):
+        self.logs.append(
+            {
+                "inputs": content,
+                "response": response,
+                "response_time": response_time,
+            }
+        )
 
     def __call__(self, content: str) -> Optional[str]:
         return self.execute(content)
@@ -99,10 +93,9 @@ class TemplateBlock(Block):
         self,
         template: str,
         config: OpenAIConfig,
-        logger: ExecutionLogger,
         message_handler: MessageHandler,
     ):
-        super().__init__(config=config, logger=logger, message_handler=message_handler)
+        super().__init__(config=config, message_handler=message_handler)
         self.template = template
         self.input_variables = re.findall(r"\{(\w+)\}", self.template)
 
@@ -147,7 +140,6 @@ def register_block_type(type_name):
 def create_block(*args, **kwargs):
     return Block(
         config=OpenAIConfig(*args, **kwargs),
-        logger=ExecutionLogger(),
         message_handler=MessageHandler(system_message=kwargs.get("system_message")),
     )
 
@@ -157,7 +149,6 @@ def create_template_block(template, *args, **kwargs):
     return TemplateBlock(
         template,
         config=OpenAIConfig(*args, **kwargs),
-        logger=ExecutionLogger(),
         message_handler=MessageHandler(system_message=kwargs.get("system_message")),
     )
 
@@ -166,7 +157,6 @@ def create_template_block(template, *args, **kwargs):
 def create_chat_block(*args, **kwargs):
     return ChatBlock(
         config=OpenAIConfig(*args, **kwargs),
-        logger=ExecutionLogger(),
         message_handler=MessageHandler(system_message=kwargs.get("system_message")),
     )
 
