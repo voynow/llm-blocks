@@ -130,42 +130,49 @@ class ChatBlock(Block):
         response = self.execute(message)
         self.message_handler.add_message("assistant", response)
         return response
-    
+
 
 block_factories = {}
+
 
 def register_block_type(type_name):
     def decorator(factory):
         block_factories[type_name] = factory
         return factory
+
     return decorator
+
 
 @register_block_type("block")
 def create_block(*args, **kwargs):
-    config = OpenAIConfig(*args, **kwargs)
-    logger = ExecutionLogger()
-    message_handler = MessageHandler(system_message=kwargs.get("system_message"))
-    return Block(config=config, logger=logger, message_handler=message_handler)
+    return Block(
+        config=OpenAIConfig(*args, **kwargs),
+        logger=ExecutionLogger(),
+        message_handler=MessageHandler(system_message=kwargs.get("system_message")),
+    )
+
 
 @register_block_type("template")
 def create_template_block(template, *args, **kwargs):
-    config = OpenAIConfig(*args, **kwargs)
-    logger = ExecutionLogger()
-    message_handler = MessageHandler(system_message=kwargs.get("system_message"))
     return TemplateBlock(
-        template, config=config, logger=logger, message_handler=message_handler
+        template,
+        config=OpenAIConfig(*args, **kwargs),
+        logger=ExecutionLogger(),
+        message_handler=MessageHandler(system_message=kwargs.get("system_message")),
     )
+
 
 @register_block_type("chat")
 def create_chat_block(*args, **kwargs):
-    config = OpenAIConfig(*args, **kwargs)
-    logger = ExecutionLogger()
-    message_handler = MessageHandler(system_message=kwargs.get("system_message"))
-    return ChatBlock(config=config, logger=logger, message_handler=message_handler)
+    return ChatBlock(
+        config=OpenAIConfig(*args, **kwargs),
+        logger=ExecutionLogger(),
+        message_handler=MessageHandler(system_message=kwargs.get("system_message")),
+    )
 
-def create_block(type: str, *args, **kwargs):
+
+def block_factory(type, *args, **kwargs):
     factory = block_factories.get(type)
     if factory is None:
         raise ValueError(f"Unknown block type: {type}")
     return factory(*args, **kwargs)
-
