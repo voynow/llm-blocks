@@ -37,15 +37,16 @@ class ExecutionLogger:
 
 class MessageHandler:
     def __init__(self, system_message: Optional[str] = None):
-        self.initialize_messages(system_message)
+        self.system_message = system_message
+        self.initialize_messages()
 
     def add_message(self, role: str, content: str):
         self.messages.append({"role": role, "content": content})
 
-    def initialize_messages(self, system_message: Optional[str]):
+    def initialize_messages(self):
         self.messages = []
-        if system_message:
-            self.add_message("system", system_message)
+        if self.system_message:
+            self.add_message("system", self.system_message)
 
 
 class Block:
@@ -64,7 +65,7 @@ class Block:
             model=self.config["model_name"],
             messages=self.message_handler.messages,
             temperature=self.config["temperature"],
-            stream=self.config["stream"],
+            stream=True,
         )
 
     def handle_execution(self, content: str) -> str:
@@ -86,7 +87,7 @@ class Block:
         return full_response_content
 
     def execute(self, content: str) -> Optional[str]:
-        self.initialize_messages()
+        self.message_handler.initialize_messages()
         return self.handle_execution(content)
 
     def __call__(self, content: str) -> Optional[str]:
@@ -137,7 +138,6 @@ def create_block(
     temperature: float = 0.1,
     stream: bool = False,
     system_message: Optional[str] = None,
-    
 ):
     """Factory function for creating a block"""
     config = OpenAIConfig(
@@ -149,6 +149,25 @@ def create_block(
     message_handler = MessageHandler(system_message=system_message)
 
     if template:
-        return TemplateBlock(template, config=config, logger=logger, message_handler=message_handler)
+        return TemplateBlock(
+            template, config=config, logger=logger, message_handler=message_handler
+        )
     else:
         return Block(config=config, logger=logger, message_handler=message_handler)
+
+
+def create_chat_block(
+    model_name: str = "gpt-3.5-turbo-16k",
+    temperature: float = 0.1,
+    stream: bool = False,
+    system_message: Optional[str] = None,
+):
+    config = OpenAIConfig(
+        model_name=model_name,
+        temperature=temperature,
+        stream=stream,
+    )
+    logger = ExecutionLogger()
+    message_handler = MessageHandler(system_message=system_message)
+
+    return ChatBlock(config=config, logger=logger, message_handler=message_handler)
