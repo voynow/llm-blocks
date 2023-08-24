@@ -132,42 +132,48 @@ class ChatBlock(Block):
         return response
 
 
-def create_block(
-    template: Optional[str] = None,
-    model_name: str = "gpt-3.5-turbo-16k",
-    temperature: float = 0.1,
-    stream: bool = False,
-    system_message: Optional[str] = None,
-):
-    """Factory function for creating a block"""
-    config = OpenAIConfig(
-        model_name=model_name,
-        temperature=temperature,
-        stream=stream,
-    )
+class BlockRegistry:
+    def __init__(self):
+        self._creators = {}
+
+    def register(self, block_type: str, creator: callable):
+        self._creators[block_type] = creator
+
+    def create(self, block_type: str, *args, **kwargs):
+        creator = self._creators.get(block_type)
+        if creator is None:
+            raise ValueError(f"Unknown block type: {block_type}")
+        return creator(*args, **kwargs)
+
+
+def create_generic_block(*args, **kwargs):
+    config = OpenAIConfig(*args, **kwargs)
     logger = ExecutionLogger()
-    message_handler = MessageHandler(system_message=system_message)
-
-    if template:
-        return TemplateBlock(
-            template, config=config, logger=logger, message_handler=message_handler
-        )
-    else:
-        return Block(config=config, logger=logger, message_handler=message_handler)
+    message_handler = MessageHandler(system_message=kwargs.get("system_message"))
+    return Block(config=config, logger=logger, message_handler=message_handler)
 
 
-def create_chat_block(
-    model_name: str = "gpt-3.5-turbo-16k",
-    temperature: float = 0.1,
-    stream: bool = False,
-    system_message: Optional[str] = None,
-):
-    config = OpenAIConfig(
-        model_name=model_name,
-        temperature=temperature,
-        stream=stream,
-    )
+def create_template_block(template, *args, **kwargs):
+    config = OpenAIConfig(*args, **kwargs)
     logger = ExecutionLogger()
-    message_handler = MessageHandler(system_message=system_message)
+    message_handler = MessageHandler(system_message=kwargs.get("system_message"))
+    return TemplateBlock(
+        template, config=config, logger=logger, message_handler=message_handler
+    )
 
+
+def create_chat_block(*args, **kwargs):
+    config = OpenAIConfig(*args, **kwargs)
+    logger = ExecutionLogger()
+    message_handler = MessageHandler(system_message=kwargs.get("system_message"))
     return ChatBlock(config=config, logger=logger, message_handler=message_handler)
+
+
+
+def create_block_registry():
+    block_registry = BlockRegistry()
+    block_registry.register("generic", create_generic_block)
+    block_registry.register("template", create_template_block)
+    block_registry.register("chat", create_chat_block)
+    return block_registry
+
