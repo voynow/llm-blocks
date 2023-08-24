@@ -8,10 +8,6 @@ import openai
 
 dotenv.load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
-if not OPENAI_API_KEY:
-    raise ValueError(
-        "OPENAI_API_KEY not found. Either create a .env file or set the environment variable."
-    )
 openai.api_key = OPENAI_API_KEY
 
 
@@ -123,46 +119,3 @@ class ChatBlock(Block):
         response = self.execute(message)
         self.message_handler.add_message("assistant", response)
         return response
-
-
-block_factories = {}
-
-
-def register_block_type(type_name):
-    def decorator(factory):
-        block_factories[type_name] = factory
-        return factory
-
-    return decorator
-
-
-@register_block_type("block")
-def create_block(*args, **kwargs):
-    return Block(
-        config=OpenAIConfig(*args, **kwargs),
-        message_handler=MessageHandler(system_message=kwargs.get("system_message")),
-    )
-
-
-@register_block_type("template")
-def create_template_block(template, *args, **kwargs):
-    return TemplateBlock(
-        template,
-        config=OpenAIConfig(*args, **kwargs),
-        message_handler=MessageHandler(system_message=kwargs.get("system_message")),
-    )
-
-
-@register_block_type("chat")
-def create_chat_block(*args, **kwargs):
-    return ChatBlock(
-        config=OpenAIConfig(*args, **kwargs),
-        message_handler=MessageHandler(system_message=kwargs.get("system_message")),
-    )
-
-
-def block_factory(type, *args, **kwargs):
-    factory = block_factories.get(type)
-    if factory is None:
-        raise ValueError(f"Unknown block type: {type}")
-    return factory(*args, **kwargs)
