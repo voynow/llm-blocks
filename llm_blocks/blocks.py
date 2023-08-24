@@ -130,29 +130,24 @@ class ChatBlock(Block):
         response = self.execute(message)
         self.message_handler.add_message("assistant", response)
         return response
+    
 
+block_factories = {}
 
-class BlockRegistry:
-    def __init__(self):
-        self._creators = {}
+def register_block_type(type_name):
+    def decorator(factory):
+        block_factories[type_name] = factory
+        return factory
+    return decorator
 
-    def register(self, block_type: str, creator: callable):
-        self._creators[block_type] = creator
-
-    def create(self, block_type: str, *args, **kwargs):
-        creator = self._creators.get(block_type)
-        if creator is None:
-            raise ValueError(f"Unknown block type: {block_type}")
-        return creator(*args, **kwargs)
-
-
-def create_generic_block(*args, **kwargs):
+@register_block_type("block")
+def create_block(*args, **kwargs):
     config = OpenAIConfig(*args, **kwargs)
     logger = ExecutionLogger()
     message_handler = MessageHandler(system_message=kwargs.get("system_message"))
     return Block(config=config, logger=logger, message_handler=message_handler)
 
-
+@register_block_type("template")
 def create_template_block(template, *args, **kwargs):
     config = OpenAIConfig(*args, **kwargs)
     logger = ExecutionLogger()
@@ -161,19 +156,16 @@ def create_template_block(template, *args, **kwargs):
         template, config=config, logger=logger, message_handler=message_handler
     )
 
-
+@register_block_type("chat")
 def create_chat_block(*args, **kwargs):
     config = OpenAIConfig(*args, **kwargs)
     logger = ExecutionLogger()
     message_handler = MessageHandler(system_message=kwargs.get("system_message"))
     return ChatBlock(config=config, logger=logger, message_handler=message_handler)
 
-
-
-def create_block_registry():
-    block_registry = BlockRegistry()
-    block_registry.register("generic", create_generic_block)
-    block_registry.register("template", create_template_block)
-    block_registry.register("chat", create_chat_block)
-    return block_registry
+def create_block(type: str, *args, **kwargs):
+    factory = block_factories.get(type)
+    if factory is None:
+        raise ValueError(f"Unknown block type: {type}")
+    return factory(*args, **kwargs)
 
