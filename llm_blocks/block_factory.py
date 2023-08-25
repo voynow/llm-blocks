@@ -13,31 +13,38 @@ def register_block_type(type_name):
     return decorator
 
 
-@register_block_type("block")
 def create_block(*args, **kwargs):
     system_message = kwargs.pop("system_message", None)
+    stream = kwargs.pop("stream", False)
+    strategy = blocks.StreamCompletion() if stream else blocks.BatchCompletion()
     return blocks.Block(
         config=blocks.OpenAIConfig(*args, **kwargs),
         message_handler=blocks.MessageHandler(system_message=system_message),
+        completion_strategy=strategy,
     )
-
 
 @register_block_type("template")
 def create_template_block(template, *args, **kwargs):
     system_message = kwargs.pop("system_message", None)
+    stream = kwargs.pop("stream", False)
+    strategy = blocks.StreamCompletion() if stream else blocks.BatchCompletion()
     return blocks.TemplateBlock(
         template,
         config=blocks.OpenAIConfig(*args, **kwargs),
         message_handler=blocks.MessageHandler(system_message=system_message),
+        completion_strategy=strategy,
     )
 
 
 @register_block_type("chat")
 def create_chat_block(*args, **kwargs):
     system_message = kwargs.pop("system_message", None)
+    stream = kwargs.pop("stream", False)
+    strategy = blocks.StreamCompletion() if stream else blocks.BatchCompletion()
     return blocks.ChatBlock(
         config=blocks.OpenAIConfig(*args, **kwargs),
         message_handler=blocks.MessageHandler(system_message=system_message),
+        completion_strategy=strategy,
     )
 
 

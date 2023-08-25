@@ -1,8 +1,9 @@
-from dataclasses import dataclass
 import os
 import re
 import time
-from typing import Any, Dict, List, Optional, TypedDict, Union
+from dataclasses import dataclass
+from typing import (Any, Dict, Generator, List, Optional, Protocol, TypedDict,
+                    Union)
 
 import dotenv
 import openai
@@ -32,23 +33,43 @@ class MessageHandler:
             self.add_message("system", self.system_message)
 
 
+class CompletionStrategy(Protocol):
+    def create_completion(self, block: "Block") -> Generator[Dict[str, Any], None, None]:
+        ...
+
+class StreamCompletion:
+    def create_completion(self, block: "Block") -> Generator[Dict[str, Any], None, None]:
+        return openai.ChatCompletion.create(
+            model=block.config.model_name,
+            messages=block.message_handler.messages,
+            temperature=block.config.temperature,
+            stream=True,
+        )
+
+class BatchCompletion:
+    def create_completion(self, block: "Block") -> Generator[Dict[str, Any], None, None]:
+        yield openai.ChatCompletion.create(
+            model=block.config.model_name,
+            messages=block.message_handler.messages,
+            temperature=block.config.temperature,
+            stream=False,
+        )
+
+
 class Block:
     def __init__(
         self,
         config: OpenAIConfig,
         message_handler: MessageHandler,
+        completion_strategy: CompletionStrategy,
     ):
         self.config = config
         self.message_handler = message_handler
-        self.logs = []
+        self.completion_strategy = completion_strategy
+        self.logs: List[Dict[str, Union[str, float]]] = []
 
-    def create_completion(self) -> openai.ChatCompletion:
-        return openai.ChatCompletion.create(
-            model=self.config.model_name,
-            messages=self.message_handler.messages,
-            temperature=self.config.temperature,
-            stream=True,
-        )
+    def create_completion(self) -> Generator[Dict[str, Any], None, None]:
+        return self.completion_strategy.create_completion(self) 
 
     def handle_execution(self, content: str) -> str:
         start_time = time.time()
@@ -86,13 +107,8 @@ class Block:
 
 
 class TemplateBlock(Block):
-    def __init__(
-        self,
-        template: str,
-        config: OpenAIConfig,
-        message_handler: MessageHandler,
-    ):
-        super().__init__(config=config, message_handler=message_handler)
+    def __init__(self, template: str, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
         self.template = template
         self.input_variables = re.findall(r"\{(\w+)\}", self.template)
 
