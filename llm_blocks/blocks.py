@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 import os
 import re
-import time
-from typing import Any, Dict, List, Optional, TypedDict, Union
+from typing import Any, Dict, List, Optional, TypedDict, Union, Generator
 
 import dotenv
 import openai
@@ -11,11 +10,11 @@ dotenv.load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
 
+
 @dataclass
 class OpenAIConfig:
     model_name: str = "gpt-3.5-turbo-16k"
     temperature: float = 0.1
-    stream: bool = False
 
 
 class MessageHandler:
@@ -40,9 +39,9 @@ class Block:
     ):
         self.config = config
         self.message_handler = message_handler
-        self.logs = []
 
-    def create_completion(self) -> openai.ChatCompletion:
+    def handle_execution(self, content: str) -> openai.ChatCompletion:
+        self.message_handler.add_message("user", content)
         return openai.ChatCompletion.create(
             model=self.config.model_name,
             messages=self.message_handler.messages,
@@ -50,36 +49,28 @@ class Block:
             stream=True,
         )
 
-    def handle_execution(self, content: str) -> str:
-        start_time = time.time()
-        self.message_handler.add_message("user", content)
-        response_generator = self.create_completion()
-        full_response_content = ""
-
-        for message in response_generator:
-            delta = message["choices"][0]["delta"]
-            content_text = delta["content"] if "content" in delta else ""
-            full_response_content += content_text
-
-            if self.config.stream:
-                print(content_text, end="", flush=True)
-
-        response_time = time.time() - start_time
-        self.log(content, full_response_content, response_time)
-        return full_response_content
-
     def execute(self, content: str) -> Optional[str]:
         self.message_handler.initialize_messages()
         return self.handle_execution(content)
 
-    def log(self, content, response, response_time):
+    def log(self, content, response):
         self.logs.append(
             {
                 "inputs": content,
                 "response": response,
-                "response_time": response_time,
             }
         )
+
+    def print_stream(self, response_gen: Generator):
+        response = ""
+
+        for message in response_gen:
+            delta = message["choices"][0]["delta"]
+            content_text = delta["content"] if "content" in delta else ""
+            print(content_text, end="", flush=True)
+            concatenated_response += content_text
+
+        return response
 
     def __call__(self, content: str) -> Optional[str]:
         return self.execute(content)
