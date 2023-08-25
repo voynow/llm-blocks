@@ -37,7 +37,20 @@ class CompletionStrategy(Protocol):
     def create_completion(self, block: "Block") -> Generator[Dict[str, Any], None, None]:
         ...
 
-class StreamCompletion:
+class CompletionParser(Protocol):
+    def parse(self, message: Dict[str, Any]) -> str:
+        ...
+
+class StreamParser(CompletionParser):
+    def parse(self, message: Dict[str, Any]) -> str:
+        delta = message["choices"][0]["delta"]
+        return delta["content"] if "content" in delta else ""
+
+class BatchParser(CompletionParser):
+    def parse(self, message: Dict[str, Any]) -> str:
+        return message["choices"][0]["message"]["content"]
+
+class StreamCompletion(CompletionStrategy):
     def create_completion(self, block: "Block") -> Generator[Dict[str, Any], None, None]:
         return openai.ChatCompletion.create(
             model=block.config.model_name,
@@ -46,7 +59,7 @@ class StreamCompletion:
             stream=True,
         )
 
-class BatchCompletion:
+class BatchCompletion(CompletionStrategy):
     def create_completion(self, block: "Block") -> Generator[Dict[str, Any], None, None]:
         yield openai.ChatCompletion.create(
             model=block.config.model_name,
@@ -55,38 +68,32 @@ class BatchCompletion:
             stream=False,
         )
 
-
 class Block:
     def __init__(
         self,
         config: OpenAIConfig,
         message_handler: MessageHandler,
         completion_strategy: CompletionStrategy,
+        completion_parser: CompletionParser,
     ):
         self.config = config
         self.message_handler = message_handler
         self.completion_strategy = completion_strategy
+        self.completion_parser = completion_parser
         self.logs: List[Dict[str, Union[str, float]]] = []
 
     def create_completion(self) -> Generator[Dict[str, Any], None, None]:
-        return self.completion_strategy.create_completion(self) 
+        return self.completion_strategy.create_completion(self)
 
     def handle_execution(self, content: str) -> str:
-        start_time = time.time()
         self.message_handler.add_message("user", content)
         response_generator = self.create_completion()
         full_response_content = ""
 
         for message in response_generator:
-            delta = message["choices"][0]["delta"]
-            content_text = delta["content"] if "content" in delta else ""
-            full_response_content += content_text
+            parsed_content = self.completion_parser.parse(message)
+            full_response_content += parsed_content
 
-            if self.config.stream:
-                print(content_text, end="", flush=True)
-
-        response_time = time.time() - start_time
-        self.log(content, full_response_content, response_time)
         return full_response_content
 
     def execute(self, content: str) -> Optional[str]:
