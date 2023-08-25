@@ -1,65 +1,56 @@
-# LLM Blocks
+# LLM-Blocks 📦
 
-![GitHub stars](https://img.shields.io/github/stars/voynow/llm-blocks?style=social) ![PyPI](https://img.shields.io/pypi/v/llm-blocks)
+![GitHub stars](https://img.shields.io/github/stars/voynow/llm-blocks)
+![PyPI](https://img.shields.io/pypi/v/llm-blocks)
 
-LLM Blocks is a Python library that provides a simple interface for creating and managing Language Model (LLM) chains. It is designed to make it easy to interact with OpenAI's GPT-3 API.
+LLM-Blocks is a Python library that provides a simple interface for creating and managing Language Learning Model (LLM) chains. It is designed to make it easy to create, manage, and execute blocks of code that interact with OpenAI's GPT-3.5-turbo model.
 
-## 📚 Table of Contents
-- [Why Use LLM Blocks](#why-use-llm-blocks)
-- [Repo Structure](#repo-structure)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Contributing](#contributing)
-- [License](#license)
+## 📖 Table of Contents
+1. [Why Use LLM-Blocks](#why-use-llm-blocks)
+2. [Repo Structure](#repo-structure)
+3. [Installation](#installation)
+4. [Usage](#usage)
+5. [Contributing](#contributing)
+6. [License](#license)
 
-## 🎯 Why Use LLM Blocks
-LLM Blocks makes it easy to create and manage LLM chains. It provides a simple, intuitive interface for interacting with OpenAI's GPT-3 API. With LLM Blocks, you can focus on building your application without worrying about the intricacies of the API.
+## 🎯 Why Use LLM-Blocks
+LLM-Blocks simplifies the process of creating and managing LLM chains. It provides a set of classes and methods that abstract the complexities of interacting with OpenAI's GPT-3.5-turbo model. With LLM-Blocks, you can focus on building your application without worrying about the underlying details of the OpenAI API.
 
 ## 🏗️ Repo Structure
 ```
-llm_blocks
+.
 ├── .gitignore
 ├── llm_blocks
 │   ├── __init__.py
-│   └── blocks.py
+│   ├── blocks.py
+│   └── block_factory.py
 ├── requirements.txt
 ├── setup.py
 └── turbo_docs.toml
 ```
 
-## 📦 Installation
-To install LLM Blocks, you can use pip:
+## 💻 Installation
+To install LLM-Blocks, run the following command in your terminal:
 ```bash
 pip install llm-blocks
 ```
 
 ## 🚀 Usage
-LLM Blocks provides three main classes: `Block`, `TemplateBlock`, and `ChatBlock`. These classes are the recommended interfaces for calling OpenAI APIs.
-
-Here is an example of how to use them:
+Here's a simple example of how to use LLM-Blocks:
 
 ```python
-from llm_blocks import Block, TemplateBlock, ChatBlock
+from llm_blocks import get
 
-template = "Hello, {name}! How are you?"
+# Create a block
+block = get("block")
 
-# Create a Block
-block = Block()
+# Execute the block
 response = block("Hello, world!")
-
-# Create a TemplateBlock
-template_block = TemplateBlock(template)
-response = template_block("AI Friend")
-# template_block(name="AI Friend") also valid
-
-# Create a ChatBlock
-chat_block = ChatBlock(template)
-response = chat_block("AI Friend")
-response = chat_block("What is the meaning of life?")
+print(response)
 ```
 
 ## 🤝 Contributing
 Contributions are welcome! Please feel free to submit a pull request.
 
-## 📧 Contact
-If you have any questions or feedback, please feel free to contact the author at voynow99@gmail.com.
+## 📜 License
+LLM-Blocks is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
