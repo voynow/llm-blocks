@@ -1,4 +1,3 @@
-
 from llm_blocks import blocks
 
 
@@ -13,6 +12,14 @@ def register_block_type(type_name):
     return decorator
 
 
+def get(type, *args, **kwargs):
+    factory = block_factories.get(type)
+    if factory is None:
+        raise ValueError(f"Unknown block type: {type}")
+    return factory(*args, **kwargs)
+
+
+@register_block_type("block")
 def create_block(*args, **kwargs):
     system_message = kwargs.pop("system_message", None)
     stream = kwargs.pop("stream", False)
@@ -22,6 +29,7 @@ def create_block(*args, **kwargs):
         message_handler=blocks.MessageHandler(system_message=system_message),
         completion_strategy=strategy,
     )
+
 
 @register_block_type("template")
 def create_template_block(template, *args, **kwargs):
@@ -46,10 +54,3 @@ def create_chat_block(*args, **kwargs):
         message_handler=blocks.MessageHandler(system_message=system_message),
         completion_strategy=strategy,
     )
-
-
-def get(type, *args, **kwargs):
-    factory = block_factories.get(type)
-    if factory is None:
-        raise ValueError(f"Unknown block type: {type}")
-    return factory(*args, **kwargs)
