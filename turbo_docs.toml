@@ -9,4 +9,9 @@ ignore = [
     "__pycache__",
     ".env",
     "llm_blocks.egg-info",
+    ".gitignore",
+    "setup.py",
+    "README.md",
+    "requirements.txt",
+    "turbo_docs.toml",
 ]
