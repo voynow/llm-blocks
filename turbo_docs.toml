@@ -15,4 +15,5 @@ ignore = [
     "requirements.txt",
     "turbo_docs.toml",
     "requirements_dev.txt",
+    ".mypy_cache"
 ]

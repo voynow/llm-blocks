@@ -122,17 +122,17 @@ class TemplateBlock(Block):
     def format_template(self, inputs: Dict[str, Any]) -> str:
         return self.template.format(**inputs)
 
-    def execute(self, inputs: Dict[str, Any]) -> Optional[str]:
-        content = self.format_template(inputs)
-        return super().execute(content)
-
-    def __call__(self, *args: Any, **kwargs: Any) -> Optional[str]:
+    def execute(self, *args: Any, **kwargs: Any) -> Optional[str]:
         inputs = {}
         if args:
             inputs = {key: value for key, value in zip(self.input_variables, args)}
         if kwargs:
             inputs.update(kwargs)
-        return self.execute(inputs)
+        content = self.format_template(inputs)
+        return super().execute(content)
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Optional[str]:
+        return self.execute(*args, **kwargs)
 
 
 class ChatBlock(Block):

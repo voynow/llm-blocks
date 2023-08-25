@@ -1,57 +1,50 @@
 import unittest
-from unittest.mock import patch
-from llm_blocks import blocks
+from llm_blocks import block_factory
+
 
 class TestLLMBlocks(unittest.TestCase):
 
-    def setUp(self):
-        self.config = blocks.OpenAIConfig()
-        self.message_handler = blocks.MessageHandler()
-        self.stream_completion = blocks.StreamCompletion()
-        self.batch_completion = blocks.BatchCompletion()
-        self.template = "Hello, {name}!"
 
-    def execute_block(self, block_type, completion_strategy, input_data):
-        """Helper function to execute a block and return the result."""
-        block = block_type(self.config, self.message_handler, completion_strategy)
-        return block.execute(input_data)
+    def test_block(self):
+        block = block_factory.get('block')
+        response = block.execute("Inlcude the number '1' in your repsonse")
+        self.assertIn("1", response)
 
-    @patch("openai.ChatCompletion.create")
-    def test_block_stream(self, mock_create):
-        """Test Block class with streaming enabled."""
-        mock_create.return_value = iter([{"choices": [{"delta": {"content": "Hello"}}]}])
-        result = self.execute_block(blocks.Block, self.stream_completion, "Test input")
-        self.assertEqual(result, "Hello")
+    def test_block_sys_message(self):
+        block = block_factory.get('block', system_message="Inlcude the number '2' in your repsonse")
+        response = block.execute("Test input")
+        self.assertIn("2", response)
 
-    @patch("openai.ChatCompletion.create")
-    def test_block_batch(self, mock_create):
-        """Test Block class with streaming disabled."""
-        mock_create.return_value = {"choices": [{"delta": {"content": "Hello"}}]}
-        result = self.execute_block(blocks.Block, self.batch_completion, "Test input")
-        self.assertEqual(result, "Hello")
+    def test_block_stream(self):
+        block = block_factory.get('block', stream=True)
+        response = block.execute("Inlcude the number '3' in your repsonse")
+        self.assertIn("3", response)
 
-    @patch("openai.ChatCompletion.create")
-    def test_template_block(self, mock_create):
-        """Test TemplateBlock class with specific template variables."""
-        mock_create.return_value = iter([{"choices": [{"delta": {"content": "Hello, John!"}}]}])
-        result = self.execute_block(blocks.TemplateBlock, self.stream_completion, {"name": "John"})
-        self.assertEqual(result, "Hello, John!")
+    def test_block_stream_sys_message(self):
+        block = block_factory.get('block', stream=True, system_message="Inlcude the number '4' in your repsonse")
+        response = block.execute("Test input")
+        self.assertIn("4", response)
 
-    @patch("openai.ChatCompletion.create")
-    def test_chat_block(self, mock_create):
-        """Test ChatBlock class for chat-based interactions."""
-        mock_create.return_value = iter([{"choices": [{"delta": {"content": "Hello"}}]}])
-        result = self.execute_block(blocks.ChatBlock, self.stream_completion, "Test input")
-        self.assertEqual(result, "Hello")
+    def test_template(self):
+        block = block_factory.get('template', template="Running unit tests: {query}")
+        response = block.execute("Inlcude the number '5' in your repsonse")
+        self.assertIn("5", response)
 
-    @patch("openai.ChatCompletion.create")
-    def test_system_message(self, mock_create):
-        """Test presence of system message in message handler."""
-        mock_create.return_value = iter([{"choices": [{"delta": {"content": "Hello"}}]}])
-        message_handler = blocks.MessageHandler(system_message="System Init")
-        block = blocks.Block(self.config, message_handler, self.stream_completion)
-        block.execute("Test input")
-        self.assertIn({"role": "system", "content": "System Init"}, message_handler.messages)
+    def test_template_sys_message(self):
+        block = block_factory.get('template', template="Running unit tests: {query}", system_message="Inlcude the number '6' in your repsonse")
+        response = block.execute("Test input")
+        self.assertIn("6", response)
+
+    def test_template_stream(self):
+        block = block_factory.get('template', template="Running unit tests: {query}", stream=True)
+        response = block.execute("Inlcude the number '7' in your repsonse")
+        self.assertIn("7", response)
+
+    def test_template_stream_sys_message(self):
+        block = block_factory.get('template', template="Running unit tests: {query}", stream=True, system_message="Inlcude the number '8' in your repsonse")
+        response = block.execute("Test input")
+        self.assertIn("8", response)
+
 
 if __name__ == "__main__":
     unittest.main()
