@@ -16,6 +16,7 @@ setup(
     install_requires=[
         'langchain',
         'python-dotenv',
+        'openai',
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
