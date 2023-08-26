@@ -33,10 +33,6 @@ class MessageHandler:
             self.add_message("system", self.system_message)
 
 
-class CompletionStrategy(Protocol):
-    def create_completion(self, block: "Block") -> Generator[Dict[str, Any], None, None]:
-        ...
-
 class CompletionParser(Protocol):
     def parse(self, message: Dict[str, Any]) -> str:
         ...
@@ -49,6 +45,10 @@ class StreamParser(CompletionParser):
 class BatchParser(CompletionParser):
     def parse(self, message: Dict[str, Any]) -> str:
         return message["choices"][0]["message"]["content"]
+    
+class CompletionStrategy(Protocol):
+    def create_completion(self, block: "Block") -> Generator[Dict[str, Any], None, None]:
+        ...
 
 class StreamCompletion(CompletionStrategy):
     def create_completion(self, block: "Block") -> Generator[Dict[str, Any], None, None]:
