@@ -73,7 +73,6 @@ class Block:
         self.config = config
         self.message_handler = message_handler
         self.completion_handler = completion_handler
-        self.logs: List[Dict[str, Union[str, float]]] = []
 
     def create_completion(self) -> Generator[Dict[str, Any], None, None]:
         return self.completion_strategy.create_completion(self)
@@ -86,15 +85,6 @@ class Block:
     def execute(self, content: str) -> Optional[str]:
         self.message_handler.initialize_messages()
         return self.handle_execution(content)
-
-    def log(self, content, response, response_time):
-        self.logs.append(
-            {
-                "inputs": content,
-                "response": response,
-                "response_time": response_time,
-            }
-        )
 
     def __call__(self, content: str) -> Optional[str]:
         return self.execute(content)
