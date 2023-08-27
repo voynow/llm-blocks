@@ -33,53 +33,46 @@ class MessageHandler:
             self.add_message("system", self.system_message)
 
 
-class CompletionParser(Protocol):
-    def parse(self, message: Dict[str, Any]) -> str:
+class CompletionHandler(Protocol):
+    def handle(self, block: "Block") -> str:
         ...
 
-class StreamParser(CompletionParser):
-    def parse(self, message: Dict[str, Any]) -> str:
-        delta = message["choices"][0]["delta"]
-        return delta["content"] if "content" in delta else ""
-
-class BatchParser(CompletionParser):
-    def parse(self, message: Dict[str, Any]) -> str:
-        return message["choices"][0]["message"]["content"]
-    
-class CompletionStrategy(Protocol):
-    def create_completion(self, block: "Block") -> Generator[Dict[str, Any], None, None]:
-        ...
-
-class StreamCompletion(CompletionStrategy):
-    def create_completion(self, block: "Block") -> Generator[Dict[str, Any], None, None]:
-        return openai.ChatCompletion.create(
+class StreamCompletionHandler(CompletionHandler):
+    def handle(self, block: "Block") -> str:
+        response_generator = openai.ChatCompletion.create(
             model=block.config.model_name,
             messages=block.message_handler.messages,
             temperature=block.config.temperature,
             stream=True,
         )
+        full_response_content = ""
+        for message in response_generator:
+            delta = message["choices"][0]["delta"]
+            parsed_content = delta["content"] if "content" in delta else ""
+            full_response_content += parsed_content
+        return full_response_content
 
-class BatchCompletion(CompletionStrategy):
-    def create_completion(self, block: "Block") -> Generator[Dict[str, Any], None, None]:
-        yield openai.ChatCompletion.create(
+class BatchCompletionHandler(CompletionHandler):
+    def handle(self, block: "Block") -> str:
+        message = openai.ChatCompletion.create(
             model=block.config.model_name,
             messages=block.message_handler.messages,
             temperature=block.config.temperature,
             stream=False,
         )
+        return message["choices"][0]["message"]["content"]
+
 
 class Block:
     def __init__(
         self,
         config: OpenAIConfig,
         message_handler: MessageHandler,
-        completion_strategy: CompletionStrategy,
-        completion_parser: CompletionParser,
+        completion_handler: CompletionHandler,
     ):
         self.config = config
         self.message_handler = message_handler
-        self.completion_strategy = completion_strategy
-        self.completion_parser = completion_parser
+        self.completion_handler = completion_handler
         self.logs: List[Dict[str, Union[str, float]]] = []
 
     def create_completion(self) -> Generator[Dict[str, Any], None, None]:
@@ -87,13 +80,7 @@ class Block:
 
     def handle_execution(self, content: str) -> str:
         self.message_handler.add_message("user", content)
-        response_generator = self.create_completion()
-        full_response_content = ""
-
-        for message in response_generator:
-            parsed_content = self.completion_parser.parse(message)
-            full_response_content += parsed_content
-
+        full_response_content = self.completion_handler.handle(self)
         return full_response_content
 
     def execute(self, content: str) -> Optional[str]:
