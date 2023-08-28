@@ -1,6 +1,6 @@
-# LLM Blocks
+# LLM Blocks 🤖
 
-![GitHub stars](https://img.shields.io/github/stars/your_username/llm_blocks?style=social)
+![GitHub stars](https://img.shields.io/github/stars/voynow/llm-blocks?style=social)
 ![PyPI](https://img.shields.io/pypi/v/llm_blocks)
 
 LLM Blocks is a Python library that provides a flexible and easy-to-use interface for interacting with OpenAI's GPT models. It provides a set of classes and methods to handle different types of interactions with the model, such as chat, template, and streamed responses.
