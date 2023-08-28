@@ -1,3 +1,2 @@
 mypy
-unittest
 turbo-docs
