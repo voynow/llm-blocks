@@ -1,8 +1,9 @@
-from dataclasses import dataclass
 import os
 import re
 import time
-from typing import Any, Dict, List, Optional, TypedDict, Union
+from dataclasses import dataclass
+from typing import (Any, Dict, Generator, List, Optional, Protocol, TypedDict,
+                    Union)
 
 import dotenv
 import openai
@@ -19,7 +20,7 @@ class OpenAIConfig:
 
 
 class MessageHandler:
-    def __init__(self, system_message: Optional[str] = None):
+    def __init__(self, system_message: Optional[str] = "You are a helpful assistant."):
         self.system_message = system_message
         self.initialize_messages()
 
@@ -28,8 +29,44 @@ class MessageHandler:
 
     def initialize_messages(self):
         self.messages = []
-        if self.system_message:
-            self.add_message("system", self.system_message)
+        self.add_message("system", self.system_message)
+
+
+class CompletionHandler(Protocol):
+    def create_completion(self, block: "Block") -> Any:
+        ...
+
+    def parse_message(self, message: Any) -> str:
+        ...
+
+class StreamCompletionHandler(CompletionHandler):
+    def create_completion(self, block: "Block") -> Any:
+        return openai.ChatCompletion.create(
+            model=block.config.model_name,
+            messages=block.message_handler.messages,
+            temperature=block.config.temperature,
+            stream=True,
+        )
+
+    def parse_message(self, message: Any) -> str:
+        full_response_content = ""
+        for msg in message:
+            delta = msg["choices"][0]["delta"]
+            parsed_content = delta["content"] if "content" in delta else ""
+            full_response_content += parsed_content
+        return full_response_content
+
+class BatchCompletionHandler(CompletionHandler):
+    def create_completion(self, block: "Block") -> Any:
+        return openai.ChatCompletion.create(
+            model=block.config.model_name,
+            messages=block.message_handler.messages,
+            temperature=block.config.temperature,
+            stream=False,
+        )
+
+    def parse_message(self, message: Any) -> str:
+        return message["choices"][0]["message"]["content"]
 
 
 class Block:
@@ -37,86 +74,54 @@ class Block:
         self,
         config: OpenAIConfig,
         message_handler: MessageHandler,
+        completion_handler: CompletionHandler,
     ):
         self.config = config
         self.message_handler = message_handler
-        self.logs = []
+        self.completion_handler = completion_handler
 
-    def create_completion(self) -> openai.ChatCompletion:
-        return openai.ChatCompletion.create(
-            model=self.config.model_name,
-            messages=self.message_handler.messages,
-            temperature=self.config.temperature,
-            stream=True,
-        )
-
-    def handle_execution(self, content: str) -> str:
-        start_time = time.time()
-        self.message_handler.add_message("user", content)
-        response_generator = self.create_completion()
-        full_response_content = ""
-
-        for message in response_generator:
-            delta = message["choices"][0]["delta"]
-            content_text = delta["content"] if "content" in delta else ""
-            full_response_content += content_text
-
-            if self.config.stream:
-                print(content_text, end="", flush=True)
-
-        response_time = time.time() - start_time
-        self.log(content, full_response_content, response_time)
-        return full_response_content
+    def prepare_content(self, content: str) -> str:
+        return content
 
     def execute(self, content: str) -> Optional[str]:
         self.message_handler.initialize_messages()
-        return self.handle_execution(content)
-
-    def log(self, content, response, response_time):
-        self.logs.append(
-            {
-                "inputs": content,
-                "response": response,
-                "response_time": response_time,
-            }
-        )
+        prepared_content = self.prepare_content(content)
+        self.message_handler.add_message("user", prepared_content)
+        message = self.completion_handler.create_completion(self)
+        return self.completion_handler.parse_message(message)
 
     def __call__(self, content: str) -> Optional[str]:
         return self.execute(content)
 
 
 class TemplateBlock(Block):
-    def __init__(
-        self,
-        template: str,
-        config: OpenAIConfig,
-        message_handler: MessageHandler,
-    ):
-        super().__init__(config=config, message_handler=message_handler)
+    def __init__(self, template: str, *args: Any, **kwargs: Any):
+        super().__init__(*args, **kwargs)
         self.template = template
         self.input_variables = re.findall(r"\{(\w+)\}", self.template)
 
-    def format_template(self, inputs: Dict[str, Any]) -> str:
-        return self.template.format(**inputs)
-
-    def execute(self, inputs: Dict[str, Any]) -> Optional[str]:
-        content = self.format_template(inputs)
-        return super().execute(content)
-
-    def __call__(self, *args: Any, **kwargs: Any) -> Optional[str]:
+    def execution_prep(self, *args: Any, **kwargs: Any) -> Dict[str, Any]:
         inputs = {}
         if args:
             inputs = {key: value for key, value in zip(self.input_variables, args)}
         if kwargs:
             inputs.update(kwargs)
-        return self.execute(inputs)
+        return self.template.format(**inputs)
+
+    def execute(self, *args: Any, **kwargs: Any) -> Optional[str]:
+        return super().execute(self.execution_prep(*args, **kwargs))
+
+    def __call__(self, *args: Any, **kwargs: Any) -> Optional[str]:
+        return self.execute(*args, **kwargs)
 
 
 class ChatBlock(Block):
     def execute(self, content: str) -> Optional[str]:
-        return self.handle_execution(content)
-
-    def __call__(self, message: str) -> Optional[str]:
-        response = self.execute(message)
+        self.message_handler.add_message("user", content)
+        
+        message = self.completion_handler.create_completion(self)
+        response = self.completion_handler.parse_message(message)
+        
         self.message_handler.add_message("assistant", response)
+            
         return response
