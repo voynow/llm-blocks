@@ -1,9 +1,7 @@
 import os
 import re
-import time
 from dataclasses import dataclass
-from typing import (Any, Dict, Generator, List, Optional, Protocol, TypedDict,
-                    Union)
+from typing import Any, Dict, Optional, Protocol
 
 import dotenv
 import openai
@@ -11,6 +9,11 @@ import openai
 dotenv.load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 openai.api_key = OPENAI_API_KEY
+
+
+def set_api_key(api_key: str):
+    openai.api_key = api_key
+
 
 @dataclass
 class OpenAIConfig:
@@ -39,6 +42,7 @@ class CompletionHandler(Protocol):
     def parse_message(self, message: Any) -> str:
         ...
 
+
 class StreamCompletionHandler(CompletionHandler):
     def create_completion(self, block: "Block") -> Any:
         return openai.ChatCompletion.create(
@@ -55,6 +59,7 @@ class StreamCompletionHandler(CompletionHandler):
             parsed_content = delta["content"] if "content" in delta else ""
             full_response_content += parsed_content
         return full_response_content
+
 
 class BatchCompletionHandler(CompletionHandler):
     def create_completion(self, block: "Block") -> Any:
@@ -118,10 +123,10 @@ class TemplateBlock(Block):
 class ChatBlock(Block):
     def execute(self, content: str) -> Optional[str]:
         self.message_handler.add_message("user", content)
-        
+
         message = self.completion_handler.create_completion(self)
         response = self.completion_handler.parse_message(message)
-        
+
         self.message_handler.add_message("assistant", response)
-            
+
         return response
