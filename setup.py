@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as f:
 
 setup(
     name="llm-blocks",
-    version="0.3.6",
+    version="0.3.7",
     author="Jamie Voynow",
     author_email="voynow99@gmail.com",
     description="Simple interface for creating and managing LLM chains",
@@ -14,16 +14,15 @@ setup(
     url="https://github.com/voynow/llm-blocks",
     packages=find_packages(),
     install_requires=[
-        'langchain',
-        'python-dotenv',
-        'openai',
+        "python-dotenv",
+        "openai",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.6',
+    python_requires=">=3.6",
 )
 
 # python setup.py sdist bdist_wheel
